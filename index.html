@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoScore IA — AI Builders</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<style>
+:root{
+  /* Charte AI Builders — bleu roi, marine, cyan, doré ; vert AIB conservé pour l'esprit EcoScore */
+  --bg:#eef3f9;--card:#fff;--border:#dce6f1;
+  --primary:#0f4c97;--primary-light:#2196d6;
+  --text:#16324f;--muted:#5d7288;--inp:#f6f9fc;
+  --brand:#001a33;--brand-mid:#0a3d66;--brand-accent:#00c864;
+  --eco:#00a857;--gold:#f0b43c;--cyan:#008cc8;
+  --sa:#1a7431;--sb:#40916c;--sc:#74c69d;
+  --sd:#e9c46a;--se:#f4a261;--sf:#e76f51;--sg:#c1121f;
+  --col-a:#10b981;--col-b:#3b82f6;--col-c:#8b5cf6;
+  color-scheme:light
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+
+header{
+  background:
+    radial-gradient(1100px 300px at 78% -60%,rgba(0,140,200,.30),transparent 60%),
+    radial-gradient(700px 240px at 30% 140%,rgba(0,80,120,.35),transparent 65%),
+    linear-gradient(100deg,#001526 0%,#052b4d 55%,#0a4a6e 100%);
+  color:#fff;padding:0 28px;display:flex;align-items:center;gap:22px;height:62px;
+  border-bottom:2px solid var(--brand-accent);flex-wrap:wrap;row-gap:6px}
+.brand-wrap{display:flex;align-items:center;padding-right:22px;border-right:1px solid rgba(255,255,255,.22)}
+.brand-logo{display:flex;flex-direction:column;line-height:1.05}
+.brand-name{font-size:21px;font-weight:600;color:#fff;letter-spacing:.01em;font-family:'Segoe UI',system-ui,sans-serif}
+.brand-baseline{font-size:7.5px;font-weight:600;color:rgba(255,255,255,.78);text-transform:uppercase;letter-spacing:.24em;margin-top:2px;white-space:nowrap}
+.product-wrap{display:flex;flex-direction:column;gap:3px}
+.product-name{font-size:14px;font-weight:800;color:#9bdcf5;letter-spacing:.14em;text-transform:uppercase}
+.product-rule{display:block;width:34px;height:2.5px;background:#fff;border-radius:2px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tabs{display:flex;gap:4px}
+@media (max-width:640px){
+  header{height:auto;padding:12px 16px;gap:10px 14px}
+  .brand-wrap{padding-right:14px}
+  .brand-name{font-size:17px}
+  .brand-baseline{font-size:6.5px;letter-spacing:.16em}
+  .product-name{font-size:11px}
+  .header-right{margin-left:0;width:100%;justify-content:flex-start}
+  .tabs{flex-wrap:wrap}
+  .tab-btn{font-size:11.5px;padding:5px 11px}
+  .session-mode-wrap{padding:6px 16px 0}
+  .session-mode-bar{padding:4px 6px 4px 11px}
+}
+.tab-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);padding:6px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.tab-btn:hover{background:rgba(255,255,255,.2)}
+.tab-btn.active{background:var(--primary-light);color:#fff;border-color:var(--primary-light)}
+/* mode selector */
+.mode-bar{background:var(--inp);border-radius:10px;padding:10px 14px;margin-bottom:2px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mode-bar-usage{border-left:3px solid var(--eco);margin-bottom:10px}
+.mode-bar-analysis{border-left:3px solid var(--primary)}
+.mode-bar-head{display:flex;flex-direction:column;gap:1px;min-width:120px}
+.mode-bar-help{font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+.mode-bar-label{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.mode-pills{display:flex;flex-wrap:wrap;gap:6px}
+.usage-type-pills{display:flex;flex-wrap:wrap;gap:8px}
+.usage-type-pills .mode-pill{flex-direction:column;align-items:flex-start;gap:2px;padding:7px 14px}
+.pill-sub{font-size:9.5px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
+.usage-type-pills .mode-pill.active .pill-sub{color:rgba(255,255,255,.85)}
+.usage-type-pills .mode-pill.active{background:var(--eco);border-color:var(--eco);color:#fff}
+.mode-pill{display:flex;align-items:center;gap:5px;background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:.2s;user-select:none}
+.mode-pill input{width:0;height:0;opacity:0;position:absolute}
+.mode-pill.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.viz-bar-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.viz-chips{display:flex;flex-wrap:wrap;gap:6px}
+.viz-chip{font:inherit;font-size:11px;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid var(--border);color:var(--muted);cursor:pointer;user-select:none;transition:.15s;background:var(--inp);-webkit-appearance:none;appearance:none;line-height:1.4}
+.viz-chip:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.entry-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:
+    radial-gradient(1100px 500px at 78% -10%,rgba(0,140,200,.30),transparent 60%),
+    radial-gradient(700px 400px at 20% 110%,rgba(0,80,120,.35),transparent 65%),
+    linear-gradient(120deg,#001526 0%,#052b4d 55%,#0a4a6e 100%);
+  opacity:1;transition:opacity .35s ease}
+.entry-overlay.hidden{opacity:0;pointer-events:none}
+.entry-card{max-width:640px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.entry-logo{margin-bottom:6px}
+.entry-product{font-size:15px;font-weight:800;color:#9bdcf5;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+.entry-desc{font-size:13.5px;color:rgba(255,255,255,.85);max-width:480px;line-height:1.6;margin:0 0 22px}
+.entry-choices{display:flex;gap:16px;width:100%;flex-wrap:wrap;justify-content:center}
+.entry-choice{flex:1 1 250px;max-width:280px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.22);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:.2s;color:#fff}
+.entry-choice:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.entry-choice.highlight{border-color:#00c864;background:rgba(0,200,100,.12)}
+.entry-choice.highlight:hover{background:rgba(0,200,100,.2)}
+.ec-icon{font-size:30px}
+.ec-title{font-size:14px;font-weight:800}
+.ec-desc{font-size:11.5px;color:rgba(255,255,255,.75);line-height:1.5}
+.entry-note{font-size:10.5px;color:rgba(255,255,255,.55);margin-top:22px}
+.session-mode-wrap{display:flex;justify-content:flex-end;padding:8px 28px 0}
+.session-mode-bar{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;padding:5px 8px 5px 14px;transition:.2s;border:1px solid;border-radius:999px;background:#fff8e6;border-color:#f0b43c;width:auto}
+.session-mode-bar.estimation{background:#e8f7ef;border-color:#00a857}
+.smb-text{display:flex;flex-direction:row;align-items:baseline;gap:7px;flex-wrap:wrap}
+.smb-title{font-size:11.5px;font-weight:800;color:#713f12;white-space:nowrap}
+.session-mode-bar.estimation .smb-title{color:#00733c}
+.smb-desc{font-size:10.5px;color:#8a6a1f}
+.smb-sep{font-size:10px;color:#c9a86a}
+.session-mode-bar.estimation .smb-desc{color:#3d7a5a}
+.smb-toggle{font-size:10.5px;font-weight:700;padding:4px 12px;border-radius:999px;border:none;cursor:pointer;background:#f0b43c;color:#5a3d0a;white-space:nowrap;transition:.15s}
+.smb-toggle:hover{filter:brightness(0.95)}
+.session-mode-bar.estimation .smb-toggle{background:#00a857;color:#fff}
+.export-lock-note{font-size:11.5px;color:var(--muted);font-style:italic}
+.export-btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.4)}
+.usage-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--inp);color:var(--muted);border:1px solid var(--border);vertical-align:middle;text-transform:none;letter-spacing:0}
+.usage-type-banner{font-size:11.5px;font-weight:600;color:var(--muted);background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:6px 12px;margin-top:-4px}
+.lever-row{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.lever-row:last-child{border-bottom:none}
+.lever-label{flex:0 0 220px;font-size:12.5px;font-weight:700;color:var(--text)}
+.lever-track{flex:1;height:14px;background:var(--inp);border:1px solid var(--border);border-radius:999px;overflow:hidden;position:relative;display:flex}
+.lever-mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--border)}
+.lever-bar{height:100%;border-radius:999px}
+.lever-bar.down{background:#00a857;margin-left:auto}
+.lever-bar.up{background:#e05252}
+.lever-val{flex:0 0 168px;text-align:right;font-size:12px}
+.lever-val strong{font-size:13px}
+.lever-val.down strong{color:#00733c}
+.lever-val.up strong{color:#c1121f}
+.viz-chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-chip:hover{filter:brightness(1.05)}
+.us-bounds{position:absolute;left:0;right:0;top:100%;height:14px;opacity:0;transition:opacity .15s;pointer-events:none}
+.us-bounds span{position:absolute;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--text);background:var(--card);padding:0 3px;border-radius:3px;white-space:nowrap}
+.cmp-thr-row:hover .us-bounds{opacity:1}
+.cmp-thr-row:hover .uscale-sm .us-seg{opacity:.55}
+.cmp-thr-row:hover .uscale-sm .us-seg.active{opacity:1}
+.cmp-thr-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cmp-thr-name{flex:0 0 150px;font-size:12px;font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uscale-sm{position:relative;height:26px;flex:1}
+.uscale-sm .us-seg{font-size:11px;border-radius:5px;border-width:1.5px}
+.usm-mini{position:absolute;top:-7px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #0f172a;z-index:4}
+.cmp-thr-ticks{display:flex;position:relative;height:16px;font-size:10px;color:var(--muted);font-weight:600;margin-left:162px}
+.cmp-thr-ticks span{position:absolute;transform:translateX(-50%)}
+.thr-axis-btn{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--inp);color:var(--muted);cursor:pointer;transition:.15s}
+.thr-axis-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.thr-axis-btn+.thr-axis-btn{margin-left:4px}
+.uscale{position:relative;height:42px;margin:32px 0 2px}
+.us-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;border-radius:6px;opacity:.45;border:2px solid #fff}
+.us-seg.active{opacity:1;box-shadow:0 2px 10px rgba(0,0,0,.25);z-index:2}
+.us-marker{position:absolute;top:-24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:4;pointer-events:none}
+.us-marker .usm-val{font-size:10px;font-weight:800;background:#0f172a;color:#fff;border-radius:5px;padding:2px 8px;white-space:nowrap}
+.us-marker .usm-tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #0f172a}
+.uscale-thresholds{position:relative;height:16px;font-size:10px;color:var(--muted);margin-top:4px;font-weight:600}
+.uscale-thresholds span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.uscale-axis{font-size:10px;color:var(--muted);text-align:right;margin-top:2px}
+.viz-placeholder{border:2px dashed var(--border);border-radius:14px;padding:38px 20px;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--card)}
+.vp-ico{font-size:30px;opacity:.5}
+.vp-txt{font-size:14px;font-weight:700;color:var(--muted)}
+.vp-sub{font-size:11.5px;color:var(--muted);opacity:.8}
+
+
+.tab-content{display:none}
+#tab-calc.active{display:grid;grid-template-columns:400px 1fr;gap:20px;padding:20px 28px;max-width:1440px;margin:0 auto}
+#tab-docs.active{display:block}
+@media (max-width:900px){
+  #tab-calc.active{grid-template-columns:1fr;padding:14px 16px}
+  .form-panel{position:static;max-height:none}
+}
+@media (max-width:640px){
+  #tab-calc.active{padding:10px 12px;gap:14px}
+  #tab-docs .doc-view{padding:16px !important}
+}
+
+.form-panel{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:20px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:7px}
+.field-group{display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;font-weight:600;color:var(--text)}
+input[type=number],select{background:var(--inp);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;width:100%}
+.toggle-row{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:20px;transition:.25s}
+.slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+input:checked+.slider{background:var(--primary-light)}
+input:checked+.slider:before{transform:translateX(18px)}
+.collapsible{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.collapsible.open{max-height:900px}
+.model-info{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:9px 13px;font-size:12px;line-height:1.5}
+.model-info strong{color:var(--primary)}
+.dc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.dc-item{background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:7px 8px;text-align:center}
+.dc-label{display:block;font-size:10px;color:var(--muted);margin-bottom:2px}
+.dc-val{font-size:15px;font-weight:700;color:var(--primary)}
+.dc-unit{display:block;font-size:10px;color:var(--muted);margin-top:1px}
+.btn-calc{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:.2s}
+.btn-calc:hover{background:#1b4332}
+.btn-calc.cmp{background:var(--brand-accent)}
+.btn-calc.cmp:hover{background:#0d9669}
+
+.axis-bar{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px}
+.axis-title{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.axis-pills{display:flex;flex-wrap:wrap;gap:6px}
+.axis-pill{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:.2s;user-select:none}
+.axis-pill input{width:0;height:0;opacity:0;position:absolute}
+.axis-pill.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.axis-note{font-size:11px;color:var(--muted);font-style:italic}
+
+.scenario-strip{display:flex;flex-direction:column;gap:8px}
+.sc-col{background:#fff;border:2px solid var(--scol);border-radius:10px;overflow:hidden}
+.sc-header{background:var(--scol);color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sc-header input[type=text]{flex:1;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);border-radius:5px;padding:3px 8px;font-size:12px;color:#fff;min-width:0}
+.sc-header input[type=text]::placeholder{color:rgba(255,255,255,.65)}
+.sc-fields{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.add-sc-btn{background:none;border:1.5px dashed var(--border);border-radius:10px;padding:11px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:.2s;width:100%}
+.add-sc-btn:hover{border-color:var(--primary);color:var(--primary);background:#f0fdf4}
+.rm-sc-btn{margin-left:auto;background:rgba(255,255,255,.2);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;padding:2px 7px;font-weight:700}
+.rm-sc-btn:hover{background:rgba(255,255,255,.4)}
+
+.results-col{display:flex;flex-direction:column;gap:16px}
+.empty-results{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:48px;text-align:center;color:var(--muted)}
+#results-block{display:none;flex-direction:column;gap:16px}
+.score-hero{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:22px;display:flex;flex-direction:column;gap:18px}
+.score-hero-top{display:flex;gap:22px;align-items:center}
+.score-main-text{display:flex;flex-direction:column;gap:4px}
+.score-main-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.score-main-range{font-size:16px;color:var(--text)}
+.score-main-range strong{color:var(--primary)}
+.score-main-note{font-size:12.5px;color:var(--muted)}
+.ecoscale-block{border-top:1px dashed var(--border);padding-top:12px}
+.ecoscale-title{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.ecoscale-title span{font-weight:400;text-transform:none;letter-spacing:0}
+.ecoscale{position:relative;display:flex;height:44px;gap:3px;margin:26px 2px 2px}
+.es-seg{flex:1;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;border-radius:6px;opacity:.42;transition:.15s;color:#fff}
+.es-seg.active{opacity:1;transform:scaleY(1.22);box-shadow:0 2px 10px rgba(0,0,0,.28);font-size:19px;z-index:2}
+.es-band{position:absolute;top:calc(100% + 7px);height:7px;background:linear-gradient(90deg,#0f4c97,#16324f);border-radius:999px;box-shadow:0 1px 3px rgba(22,50,79,.35);pointer-events:auto;z-index:1}
+.es-marker{position:absolute;top:-22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:4;pointer-events:none}
+.es-marker .esm-val{font-size:10px;font-weight:800;background:#0f172a;color:#fff;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.es-marker .esm-tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #0f172a}
+.ecoscale-thresholds{position:relative;height:15px;font-size:9.5px;color:var(--muted);margin:18px 2px 0}
+.ecoscale-thresholds span{position:absolute;transform:translateX(-50%)}
+.score-method-box{text-align:center;padding:0 18px}
+.score-method-label{font-size:10px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.score-method-sub{font-size:13px;font-weight:800;color:var(--text);margin-top:4px;letter-spacing:.03em}
+.score-method-desc{font-size:10px;color:var(--muted);margin-top:3px}
+.score-det-range{display:flex;align-items:center;gap:8px}
+.score-det-bound{text-align:center}
+.score-det-arrow{font-size:18px;color:var(--muted);font-weight:300;flex-shrink:0}
+.score-letter.score-det-sm{width:58px;height:58px;font-size:32px;border-radius:11px}
+.score-dominant-wrap{text-align:center;flex-shrink:0}
+.score-badge-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.score-letter{width:80px;height:80px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.score-dominant-prob{font-size:20px;font-weight:800;color:var(--text);margin-top:6px}
+.score-A{background:var(--sa)}.score-B{background:var(--sb)}.score-C{background:var(--sc);color:#1a4731!important}.score-D{background:var(--sd);color:#5a4000!important}.score-E{background:var(--se)}.score-F{background:var(--sf)}.score-G{background:var(--sg)}
+.score-scale{flex:1}
+.scale-title{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.prob-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;background:#f1f5f9;margin-bottom:4px}
+.prob-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;min-width:0;overflow:hidden}
+.prob-seg.score-C,.prob-seg.score-D{color:#2d3748}
+.prob-lbl-row{display:flex;height:15px;margin-bottom:8px}
+.prob-lbl{font-size:10px;color:var(--muted);text-align:center;overflow:hidden}
+.scale-legend{display:flex;gap:5px;flex-wrap:wrap}
+.pill{font-size:10px;font-weight:700;color:#fff;padding:2px 7px;border-radius:10px}
+.pill.score-C,.pill.score-D{color:#2d3748}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.metric-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:18px 16px}
+.metric-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.metric-icon{font-size:20px}.metric-label{font-size:12px;font-weight:700}
+.metric-equiv-icon{font-size:26px;display:block;margin-bottom:4px}
+.metric-equiv-value{font-size:26px;font-weight:800;line-height:1.1}
+.metric-equiv-label{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.3}
+.metric-raw{background:var(--inp);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--muted);border:1px solid var(--border);margin-top:12px;line-height:1.6}
+.metric-raw strong{color:var(--text);font-weight:700;font-size:15px}
+.ic90{font-size:11px;color:var(--muted)}
+.chart-panel{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.panel-title{padding:14px 18px;border-bottom:1px solid var(--border);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:space-between}
+.chart-body{padding:16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.chart-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.chart-item-label{font-size:12px;font-weight:600;color:var(--muted);text-align:center}
+.chart-item canvas{width:130px!important;height:290px!important}
+.detail-panel{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.detail-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.dh-title{font-weight:700;font-size:13px;flex:1}
+.dh-tag{font-size:11px;background:#f1f5f9;border-radius:20px;padding:2px 10px;color:var(--muted)}
+.detail-body{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.detail-item{background:var(--inp);border-radius:10px;padding:14px 16px;border-top:3px solid var(--border)}
+.detail-item.elec{border-top-color:#3b82f6}.detail-item.co2{border-top-color:#00834a}.detail-item.water{border-top-color:#0369a1}
+.di-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.di-range{font-size:15px;font-weight:700}
+.di-unit{font-size:12px;font-weight:500;color:var(--muted);margin-left:3px}
+.di-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.tokens-section{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px}
+.tokens-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--primary);margin-bottom:10px}
+.tokens-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.token-chip span{font-size:11px;color:var(--muted)}
+.token-chip strong{font-size:18px;color:var(--primary);font-weight:700;display:block}
+
+/* ── COMPARISON RESULTS ── */
+#cmp-results-block{display:none;flex-direction:column;gap:16px}
+.cmp-badges-row{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:22px;display:flex;gap:16px;flex-wrap:wrap}
+.cmp-badge{flex:1 1 200px;min-width:200px;background:var(--inp);border:2px solid var(--scol);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cmp-badge-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--scol)}
+.cmp-score-letter{width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff}
+.cmp-score-sub{font-size:18px;font-weight:800;color:var(--text)}
+.cmp-score-prob{font-size:11px;color:var(--muted)}
+.cmp-co2-val{font-size:13px;font-weight:700;color:var(--text);margin-top:2px}
+.cmp-chart-panel{background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.cmp-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;padding:16px 18px}
+.cmp-many .cmp-charts-grid{grid-template-columns:1fr}
+.cmp-chart-wrap{display:flex;flex-direction:column;gap:8px}
+.cms-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.cmp-winner-badge{display:inline-block;font-size:10px;background:#d9f6e6;color:#00733c;border-radius:10px;padding:1px 7px;font-weight:700;margin-left:4px;vertical-align:middle}
+
+/* class distribution comparison */
+.cmp-class-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.cmp-class-label{font-size:12px;font-weight:700;min-width:90px;white-space:nowrap}
+.cmp-class-bar{flex:1;display:flex;height:24px;border-radius:6px;overflow:hidden;background:#f1f5f9}
+.cmp-class-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;min-width:0;overflow:hidden}
+.cmp-class-seg.score-C,.cmp-class-seg.score-D{color:#2d3748}
+
+/* relative comparison */
+.cmp-table{width:100%;border-collapse:collapse;font-size:12px}
+.cmp-table th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap}
+.cmp-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.cmp-table .ct-small{font-size:10.5px;color:var(--muted)}
+.ct-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.impact-row{display:flex;gap:12px;align-items:flex-start}
+.ir-rank{font-size:20px;line-height:1;min-width:34px;text-align:center;padding-top:2px}
+.ir-body{flex:1;display:flex;flex-direction:column;gap:4px}
+.ir-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.ir-name{font-size:13px;font-weight:800}
+.ir-val{font-size:12px;color:var(--text)}
+.ir-track{height:12px;background:var(--inp);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.ir-bar{height:100%;border-radius:999px;transition:width .3s}
+.ir-best{font-size:11.5px;font-weight:700;color:#00733c}
+.ir-delta{font-size:11.5px;color:var(--muted)}
+.ir-note{font-size:10.5px;color:var(--muted);margin-top:4px;border-top:1px dashed var(--border);padding-top:8px}
+.cmp-donut-card{flex:1 1 210px;max-width:300px;background:var(--inp);border:1px solid var(--border);border-top:3px solid var(--scol);border-radius:10px;padding:12px 10px 10px}
+.cmp-donut-name{font-size:12px;font-weight:700;text-align:center;margin-bottom:6px}
+.cmp-donut-total{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+.cmp-donut-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 18px 14px;justify-content:center}
+.cdl-item{font-size:11px;color:var(--text);display:inline-flex;align-items:center;gap:5px}
+.cdl-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.rel-cmp-card{background:var(--inp);border-radius:10px;padding:14px 16px;border-left:3px solid var(--scol)}
+.rel-cmp-title{font-size:12px;font-weight:700;margin-bottom:10px}
+.rel-metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.rel-metric{text-align:center}
+.rel-metric-icon{font-size:13px;color:var(--muted)}
+.rel-metric-val{font-size:22px;font-weight:800;line-height:1.1;margin:2px 0}
+.rel-metric-diff{font-size:11px;font-weight:600}
+
+/* normalisation toggle */
+.norm-toggle-group{display:flex;gap:3px;margin-left:auto}
+.norm-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 9px;border-radius:5px;font-size:11px;cursor:pointer;transition:.15s}
+.norm-btn:hover{background:var(--inp)}
+.norm-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* doc sub-tabs */
+.doc-subtabs{display:flex;gap:6px;margin-bottom:4px}
+.doc-subtab{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.doc-subtab:hover{background:var(--inp)}
+.doc-subtab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.doc-view{display:none}
+.doc-view.active{display:block}
+
+/* simple doc */
+.simple-hero{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:22px 24px;margin-bottom:24px}
+.simple-hero-title{font-size:18px;font-weight:800;color:var(--primary);margin-bottom:8px}
+.simple-hero-sub{font-size:14px;line-height:1.7;color:var(--text)}
+.simple-section-title{font-size:15px;font-weight:800;color:var(--text);margin:28px 0 14px;border-bottom:2px solid var(--border);padding-bottom:6px}
+.simple-steps{display:flex;flex-direction:column;gap:12px}
+.simple-step{display:flex;gap:14px;align-items:flex-start;background:var(--inp);border-radius:10px;padding:14px 16px}
+.step-num{min-width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.step-title{font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.step-text{font-size:13px;line-height:1.6;color:var(--muted)}
+.simple-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.simple-card{background:var(--inp);border-radius:10px;padding:16px;border:1px solid var(--border)}
+.simple-card.tip{border-left:3px solid var(--primary)}
+.sc-icon{font-size:22px;margin-bottom:8px}
+.sc-title{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.sc-text{font-size:12px;line-height:1.6;color:var(--muted)}
+.score-scale{display:flex;flex-direction:column;gap:6px}
+.score-scale-item{display:flex;align-items:center;gap:14px;padding:8px 14px;border-radius:8px;background:var(--inp)}
+.ssl-letter{font-size:18px;font-weight:900;min-width:24px}
+.score-scale-item.score-A .ssl-letter{color:var(--sa)}
+.score-scale-item.score-B .ssl-letter{color:var(--sb)}
+.score-scale-item.score-C .ssl-letter{color:#40804a}
+.score-scale-item.score-D .ssl-letter{color:#8a6500}
+.score-scale-item.score-E .ssl-letter{color:var(--se)}
+.score-scale-item.score-F .ssl-letter{color:var(--sf)}
+.score-scale-item.score-G .ssl-letter{color:var(--sg)}
+.ssl-range{font-size:12px;font-weight:700;min-width:120px;color:var(--text)}
+.ssl-eg{font-size:12px;color:var(--muted)}
+.glossary{display:flex;flex-direction:column;gap:1px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.gloss-item{display:grid;grid-template-columns:140px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.gloss-item:last-child{border-bottom:none}
+.gloss-term{background:var(--inp);padding:12px 14px;font-size:12px;font-weight:700;color:var(--primary);display:flex;align-items:center}
+.gloss-def{padding:12px 14px;font-size:12px;line-height:1.6;color:var(--text);background:var(--card-bg)}
+
+/* export */
+.export-btn-sec{opacity:.85;filter:saturate(.7)}
+.export-btn+.export-btn{margin-left:8px}
+.export-btn{display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:9px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;margin-left:auto}
+.export-btn:hover{background:var(--brand-mid)}
+
+/* ── DOCS ── */
+#tab-docs{padding:28px;max-width:920px;margin:0 auto}
+.doc-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--border)}
+.doc-nav a{font-size:12px;font-weight:600;color:var(--primary);background:#fff;border:1px solid var(--border);padding:5px 12px;border-radius:20px;text-decoration:none}
+.doc-nav a:hover{background:var(--primary);color:#fff}
+.doc-section{background:#fff;border-radius:14px;border:1px solid var(--border);padding:28px;margin-bottom:20px}
+.doc-section h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.doc-section h3{font-size:14px;font-weight:700;color:var(--primary);margin:20px 0 10px}
+.doc-section p{font-size:14px;line-height:1.7;margin-bottom:10px}
+.doc-section ul{margin-left:20px;line-height:1.9;font-size:14px}
+.formula-box{background:#f8fafc;border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:8px;padding:14px 18px;margin:12px 0;font-size:14px;line-height:2.2}
+.formula-box .c{color:#64748b;font-style:italic;font-size:12px}
+.math-block{text-align:center;padding:6px 0;overflow-x:auto;font-family:Georgia,'Times New Roman',serif;letter-spacing:.01em}
+.mfrac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px;line-height:1.3}
+.mnum{border-bottom:1.5px solid currentColor;padding:1px 6px;text-align:center;min-width:16px}
+.mden{padding:1px 6px;text-align:center;min-width:16px}
+.formula-box sup,.formula-box .mnum sup,.formula-box .mden sup{font-size:.72em;vertical-align:super;line-height:0}
+.formula-box sub,.formula-box .mnum sub,.formula-box .mden sub{font-size:.72em;vertical-align:sub;line-height:0}
+.var-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.var-table th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border-bottom:2px solid var(--border)}
+.var-table td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.var-table td:first-child{font-family:'Courier New',monospace;font-weight:700;color:var(--primary);white-space:nowrap}
+.hl{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;font-size:13px;margin:12px 0;line-height:1.6}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;font-size:13px;margin:12px 0;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="entry-overlay" class="entry-overlay">
+  <div class="entry-card">
+    <div class="entry-logo">
+      <div style="font-size:24px;font-weight:600;color:#fff">AI&thinsp;Builders</div>
+      <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.24em;color:rgba(255,255,255,.78);margin-top:2px">Le leader de la stratégie data et IA</div>
+    </div>
+    <div class="entry-product">ECOSCORE IA</div>
+    <p class="entry-desc">Estimez l'empreinte environnementale (carbone, électricité, eau) d'un cas d'usage d'IA générative. Comment souhaitez-vous utiliser l'outil aujourd'hui ?</p>
+    <div class="entry-choices">
+      <button type="button" class="entry-choice" onclick="chooseEntryMode('test')">
+        <span class="ec-icon">🧪</span>
+        <span class="ec-title">Tester l'outil</span>
+        <span class="ec-desc">Je découvre l'interface et j'explore librement. Non exportable.</span>
+      </button>
+      <button type="button" class="entry-choice highlight" onclick="chooseEntryMode('estimation')">
+        <span class="ec-icon">📊</span>
+        <span class="ec-title">Estimer un ou plusieurs cas d'usage</span>
+        <span class="ec-desc">J'évalue un vrai projet. Résultats exportables.</span>
+      </button>
+    </div>
+    <p class="entry-note">Ce choix reste modifiable à tout moment depuis le bandeau en haut de l'outil.</p>
+  </div>
+</div>
+
+<header>
+  <div class="brand-wrap">
+    <div class="brand-logo">
+      <span class="brand-name">AI&thinsp;Builders</span>
+      <span class="brand-baseline">Le leader de la stratégie data et IA</span>
+    </div>
+  </div>
+  <div class="product-wrap">
+    <span class="product-name">Ecoscore IA</span>
+    <span class="product-rule"></span>
+  </div>
+  <div class="header-right">
+    <nav class="tabs">
+      <button class="tab-btn active" onclick="showTab('calc',this)">🧮 Calculateur</button>
+      <button class="tab-btn" onclick="showTab('docs',this)">📖 Documentation</button>
+    </nav>
+  </div>
+</header>
+
+<!-- Mode de session : test (exploratoire) ou estimation réelle (exportable) — indépendant des paramètres d'estimation -->
+<div class="session-mode-wrap">
+<div class="session-mode-bar" id="session_mode_bar">
+  <div class="smb-text">
+    <span class="smb-title" id="smb_title">🧪 Mode test</span>
+    <span class="smb-sep">·</span>
+    <span class="smb-desc" id="smb_desc">Non exportable.</span>
+  </div>
+  <button type="button" class="smb-toggle" id="smb_toggle" onclick="toggleSessionMode()">Passer en mode Estimation →</button>
+</div>
+</div>
+
+<div id="tab-calc" class="tab-content active">
+  <div class="form-panel">
+
+    <!-- Sélecteur de type d'usage -->
+    <div class="mode-bar mode-bar-usage">
+      <div class="mode-bar-head">
+        <span class="mode-bar-label">🧭 Type d'usage</span>
+        <span class="mode-bar-help">Comment le cas d'usage est-il consommé ?</span>
+      </div>
+      <div class="usage-type-pills">
+        <label class="mode-pill active" onclick="setUsageType('conv',this)"><input type="radio" name="usage_type" value="conv" checked>🗨️ Conversationnel<span class="pill-sub">Chat, assistant, échanges utilisateurs</span></label>
+        <label class="mode-pill" onclick="setUsageType('batch',this)"><input type="radio" name="usage_type" value="batch">🏭 Industriel (batch)<span class="pill-sub">Traitement automatisé en masse (extraction, classification…)</span></label>
+      </div>
+    </div>
+
+    <!-- Sélecteur de mode d'analyse -->
+    <div class="mode-bar mode-bar-analysis">
+      <div class="mode-bar-head">
+        <span class="mode-bar-label">🧮 Mode d'analyse</span>
+        <span class="mode-bar-help">Que voulez-vous obtenir ?</span>
+      </div>
+      <div class="mode-pills">
+        <label class="mode-pill active" onclick="setCompareMode('none',this)"><input type="radio" name="cmp_mode" value="none" checked>📊 Estimation simple</label>
+        <label class="mode-pill" onclick="setCompareMode('compare',this)"><input type="radio" name="cmp_mode" value="compare">⚖️ Comparer des scénarios</label>
+      </div>
+    </div>
+
+    <div id="axis-section" style="display:none">
+      <div class="axis-bar">
+        <div class="axis-title">Comparer sur</div>
+        <div class="axis-pills">
+          <label class="axis-pill active" onclick="selectAxis('model',this)"><input type="radio" name="axis" value="model" checked>🤖 Modèle IA</label>
+          <label class="axis-pill" onclick="selectAxis('users',this)"><input type="radio" name="axis" value="users">👤 Nb utilisateurs</label>
+          <label class="axis-pill" onclick="selectAxis('arch',this)"><input type="radio" name="axis" value="arch">📚 Architecture</label>
+          <label class="axis-pill" onclick="selectAxis('dc',this)"><input type="radio" name="axis" value="dc">🏭 Datacenter</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="usage-section">
+      <div class="section-title">👤 Usage</div>
+      <div class="field-group">
+        <div id="field-n-users" class="field"><label id="n_users_label">Nombre d'utilisateurs</label>
+          <div style="display:flex;gap:6px">
+            <input type="number" id="n_users" value="100" min="1" style="flex:1">
+            <select id="n_users_period" style="display:none;flex:0 0 90px" onchange="calculate()"><option value="an">/ an</option><option value="jour">/ jour</option></select>
+          </div>
+        </div>
+        <div id="users-axis-note" class="axis-note" style="display:none">↕ Varie par scénario ci-dessous</div>
+        <div id="conv-only-fields" style="display:contents">
+          <div class="field"><label>Conversations / utilisateur / an</label><input type="number" id="n_yearly_conv" value="250" min="1"></div>
+          <div class="field"><label>Messages par conversation</label><input type="number" id="n_messages" value="5" min="1"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sizes-section">
+      <div class="section-title">💬 Taille des échanges</div>
+      <div class="field-group">
+        <div class="field"><label>System prompt</label>
+          <select id="systemprompt_cat" onchange="toggleCustomField('systemprompt_cat','systemprompt_val')">
+            <option value="150">Petit (&lt;250 tokens)</option><option value="600" selected>Moyen (250 à 1 000 tokens)</option>
+            <option value="2500">Élevé (1 000 à 5 000 tokens)</option><option value="12000">Très élevé (5 000 à 25 000 tokens)</option>
+            <option value="custom">Personnalisé</option>
+          </select>
+          <input type="number" id="systemprompt_val" style="display:none;margin-top:4px" placeholder="tokens">
+        </div>
+        <div class="field"><label id="request_size_label">Requête utilisateur</label>
+          <select id="request_size_cat" onchange="toggleCustomField('request_size_cat','request_size_val')">
+            <option value="150" selected>Petit (&lt;250 tokens)</option><option value="600">Moyen (250 à 1 000 tokens)</option>
+            <option value="2500">Élevé (1 000 à 5 000 tokens)</option><option value="12000">Très élevé (5 000 à 25 000 tokens)</option>
+            <option value="custom">Personnalisée</option>
+          </select>
+          <input type="number" id="request_size_val" style="display:none;margin-top:4px" placeholder="tokens">
+        </div>
+        <div class="field"><label>Réponse du modèle</label>
+          <select id="response_size_cat" onchange="toggleCustomField('response_size_cat','response_size_val')">
+            <option value="150">Petit (&lt;250 tokens)</option><option value="600" selected>Moyen (250 à 1 000 tokens)</option>
+            <option value="2500">Élevé (1 000 à 5 000 tokens)</option><option value="12000">Très élevé (5 000 à 25 000 tokens)</option>
+            <option value="custom">Personnalisée</option>
+          </select>
+          <input type="number" id="response_size_val" style="display:none;margin-top:4px" placeholder="tokens">
+        </div>
+        <div class="toggle-row" id="history-toggle-row"><label class="toggle"><input type="checkbox" id="bool_history"><span class="slider"></span></label><span style="font-size:13px;font-weight:500">Historique conversationnel</span></div>
+      </div>
+    </div>
+
+    <div id="llm-section">
+      <div class="section-title">🤖 Modèle LLM</div>
+      <div class="field-group">
+        <div class="field"><label>Fournisseur</label><select id="provider_select" onchange="filterModels()"><option>Anthropic</option><option>OpenAI</option><option>Google</option><option>Meta</option><option>Mistral</option><option>Cohere</option><option>Générique</option></select></div>
+        <div class="field"><label>Modèle</label><select id="model_select" onchange="updateModelInfo()"></select></div>
+        <div class="model-info" id="model_info" style="display:none"></div>
+      </div>
+      <div id="llm-axis-note" class="axis-note" style="display:none">↕ Varie par scénario ci-dessous</div>
+    </div>
+
+    <div id="dc-section">
+      <div class="section-title">🏭 Datacenter</div>
+      <div class="field"><label>Localisation</label>
+        <select id="dc_country" onchange="updateDC()"><option>France</option><option>Suède</option><option>Allemagne</option><option>Irlande</option><option>Pologne</option><option>Etats Unis</option><option>Canada</option><option>Chine</option><option>Japon</option><option value="autre">Autre (personnalisé)</option></select>
+      </div>
+      <div id="dc_readonly"><div class="dc-grid">
+        <div class="dc-item"><span class="dc-label">PUE</span><span class="dc-val" id="dc_pue_disp">—</span><span class="dc-unit">ratio</span></div>
+        <div class="dc-item"><span class="dc-label">CO₂</span><span class="dc-val" id="dc_carbon_disp">—</span><span class="dc-unit">gCO₂/kWh</span></div>
+        <div class="dc-item"><span class="dc-label">WUE</span><span class="dc-val" id="dc_wue_disp">—</span><span class="dc-unit">L/kWh</span></div>
+        <div class="dc-item"><span class="dc-label">EWIF</span><span class="dc-val" id="dc_ewif_disp">—</span><span class="dc-unit">L/kWh</span></div>
+      </div></div>
+      <div id="dc_custom" style="display:none">
+        <div class="field-group" style="margin-top:8px">
+          <div class="field"><label>PUE</label><input type="number" id="dc_pue_input" value="1.5" step="0.01"></div>
+          <div class="field"><label>Intensité carbone (gCO₂e/kWh)</label><input type="number" id="dc_carbon_input" value="400"></div>
+          <div class="field"><label>WUE Scope 1 (L/kWh)</label><input type="number" id="dc_wue_input" value="1.5" step="0.1"></div>
+          <div class="field"><label>EWIF Scope 2 (L/kWh)</label><input type="number" id="dc_ewif_input" value="0.5" step="0.1"></div>
+        </div>
+      </div>
+      <div id="dc-axis-note" class="axis-note" style="display:none">↕ Varie par scénario ci-dessous</div>
+    </div>
+
+    <div id="rag-section">
+      <div class="section-title">📚 RAG</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="bool_rag" onchange="toggleSection('bool_rag','rag_fields')"><span class="slider"></span></label><span style="font-size:13px;font-weight:500">RAG activé</span></div>
+      <div class="collapsible" id="rag_fields">
+        <div class="field-group" style="margin-top:10px">
+          <div class="field"><label>Documents dans la base</label><input type="number" id="n_docs" value="1000"></div>
+          <div class="field"><label>Pages par document</label><input type="number" id="n_pages" value="10"></div>
+          <div class="field"><label>Refreshs / an</label><input type="number" id="n_docs_refresh" value="12"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ft-section">
+      <div class="section-title">🔧 Fine-tuning</div>
+      <div class="toggle-row"><label class="toggle"><input type="checkbox" id="bool_ft" onchange="toggleSection('bool_ft','ft_fields')"><span class="slider"></span></label><span style="font-size:13px;font-weight:500">Fine-tuning activé</span></div>
+      <div class="collapsible" id="ft_fields">
+        <div class="field-group" style="margin-top:10px">
+          <div class="field"><label>Exemples d'entraînement</label>
+            <select id="ft_examples_cat" onchange="toggleCustomField('ft_examples_cat','ft_examples_val')"><option value="1000">1 000</option><option value="10000" selected>10 000</option><option value="100000">100 000</option><option value="custom">Personnalisé</option></select>
+            <input type="number" id="ft_examples_val" style="display:none;margin-top:4px">
+          </div>
+          <div class="field"><label>Epochs</label>
+            <select id="ft_epochs_cat" onchange="toggleCustomField('ft_epochs_cat','ft_epochs_val')"><option value="1">1</option><option value="3" selected>3</option><option value="10">10</option><option value="custom">Personnalisé</option></select>
+            <input type="number" id="ft_epochs_val" style="display:none;margin-top:4px">
+          </div>
+        </div>
+      </div>
+      <div id="arch-axis-note" class="axis-note" style="display:none">↕ Architecture varie par scénario ci-dessous</div>
+    </div>
+
+    <div id="scenario-strip" style="display:none">
+      <div class="section-title" style="margin-bottom:10px">📋 Scénarios à comparer</div>
+      <div id="scenario-strip-inner" class="scenario-strip"></div>
+    </div>
+
+    <button class="btn-calc" id="calc-btn" onclick="handleCalculate()">⚡ Estimer l'empreinte</button>
+  </div>
+
+  <div class="results-col">
+    <div class="empty-results" id="empty-msg"><div style="font-size:48px;margin-bottom:12px">🌿</div><div style="font-size:16px;font-weight:700;margin-bottom:6px">Prêt à estimer</div><div style="font-size:13px">Remplissez le formulaire et cliquez sur <strong>Estimer l'empreinte</strong></div></div>
+
+    <!-- Standard results -->
+    <div id="results-block">
+      <div class="score-hero" role="status" aria-live="polite" aria-atomic="true">
+        <div class="score-hero-top">
+          <div class="score-letter score-A" id="score_main" aria-hidden="true">—</div>
+          <div class="score-main-text">
+            <div class="score-main-label">EcoScore du cas d'usage <span class="usage-type-badge" id="usage_type_badge_single"></span></div>
+            <div class="score-main-range" id="score_range_txt">—</div>
+            <div class="score-main-note" id="score_note_txt"></div>
+          </div>
+        </div>
+        <div class="ecoscale-block">
+          <div class="ecoscale-title">📏 Position sur l'échelle EcoScore <span>— empreinte carbone en tonnes de CO₂e par an · ▼ estimation centrale · barre bleue = fourchette probable</span></div>
+          <div class="ecoscale" id="ecoscale"></div>
+          <div class="ecoscale-thresholds" id="ecoscale_thr"></div>
+        </div>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-header"><span class="metric-icon">🌡️</span><span class="metric-label">Empreinte carbone</span></div><span class="metric-equiv-icon">✈️</span><div class="metric-equiv-value" id="eq_co2">—</div><div class="metric-equiv-label">vols A/R Paris–New York</div><div class="metric-raw"><strong id="m_co2_p50">—</strong> tCO₂e/an<br><span class="ic90">Fourchette : <span id="m_co2_p5">—</span> – <span id="m_co2_p95">—</span> tCO₂e</span></div></div>
+        <div class="metric-card"><div class="metric-header"><span class="metric-icon">⚡</span><span class="metric-label">Consommation électrique</span></div><span class="metric-equiv-icon">🏠</span><div class="metric-equiv-value" id="eq_kwh">—</div><div class="metric-equiv-label">foyers français / an</div><div class="metric-raw"><strong id="m_kwh_p50">—</strong> kWh/an<br><span class="ic90">Fourchette : <span id="m_kwh_p5">—</span> – <span id="m_kwh_p95">—</span> kWh</span></div></div>
+        <div class="metric-card"><div class="metric-header"><span class="metric-icon">💧</span><span class="metric-label">Consommation d'eau</span></div><span class="metric-equiv-icon">🧍</span><div class="metric-equiv-value" id="eq_water">—</div><div class="metric-equiv-label">conso. annuelles / Français</div><div class="metric-raw"><strong id="m_water_p50">—</strong> L/an<br><span class="ic90">Fourchette : <span id="m_water_p5">—</span> – <span id="m_water_p95">—</span> L</span></div></div>
+      </div>
+      <div class="viz-bar"><span class="viz-bar-title">📊 Explorer en graphiques</span><div class="viz-chips" id="viz-chips-single"></div></div>
+      <div class="viz-placeholder" id="viz_placeholder_single"><span class="vp-ico">📊</span><div class="vp-txt">Choisissez une vue ci-dessus</div><div class="vp-sub">Le graphique sélectionné s'affichera ici</div></div>
+      <div class="chart-panel" id="panel-range">
+        <div class="panel-title">📊 Fourchette d'estimation</div>
+        <div class="chart-body">
+          <div class="chart-item"><div class="chart-item-label">🌡️ Carbone (tCO₂e)</div><canvas id="chart_co2" width="130" height="290"></canvas></div>
+          <div class="chart-item"><div class="chart-item-label">⚡ Électricité (kWh)</div><canvas id="chart_kwh" width="130" height="290"></canvas></div>
+          <div class="chart-item"><div class="chart-item-label">💧 Eau (L)</div><canvas id="chart_water" width="130" height="290"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-panel" id="panel-peruser">
+        <div class="panel-title">👤 Consommation ramenée à l'usage <span style="font-size:11px;font-weight:400;color:var(--muted)">(estimation centrale, mise en place incluse)</span></div>
+        <div id="peruser_body" style="padding:14px 18px 16px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+      <div class="chart-panel" id="panel-decomp">
+        <div class="panel-title">🎯 Décomposition de l'empreinte</div>
+        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;padding:16px 20px">
+          <div style="position:relative;width:230px;height:185px;flex:0 0 auto"><canvas id="chart_decomp"></canvas></div>
+          <div id="decomp_insight" style="flex:1 1 260px">—</div>
+        </div>
+      </div>
+      <div class="chart-panel" id="panel-levers">
+        <div class="panel-title">🔧 Leviers de sobriété <span style="font-size:11px;font-weight:400;color:var(--muted)">(chaque option est recalculée par l’outil, toutes choses égales par ailleurs)</span></div>
+        <div style="padding:12px 18px 4px" id="levers_wrap"></div>
+        <div style="font-size:11px;color:var(--muted);padding:6px 18px 14px" id="levers_note"></div>
+      </div>
+      <div class="chart-panel" id="panel-threshold">
+        <div class="panel-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>📈 Seuil de bascule</span><span style="font-size:11px;font-weight:400;color:var(--muted)">(jusqu'où avant de changer de classe ? — autres réglages inchangés)</span>
+          <span class="thr-axis-toggle" style="margin-left:auto">
+            <button class="thr-axis-btn on" data-axis="users" aria-pressed="true" onclick="setThresholdAxis('users')">👥 Utilisateurs</button>
+            <button class="thr-axis-btn" data-axis="conv" aria-pressed="false" onclick="setThresholdAxis('conv')">💬 Conversations</button>
+          </span></div>
+        <div style="padding:8px 24px 2px">
+          <div class="uscale" id="uscale"></div>
+          <div class="uscale-thresholds" id="uscale_thr"></div>
+          <div class="uscale-axis" id="uscale_axis">Nombre d'utilisateurs →</div>
+        </div>
+        <div id="threshold_note" style="font-size:12.5px;color:var(--text);padding:2px 24px 16px"></div>
+      </div>
+      <div class="detail-panel" id="panel-detail-run">
+        <div class="detail-header"><span>🔄</span><span class="dh-title">Run — 1 an d'utilisation</span><span class="dh-tag" id="run_tag"></span></div>
+        <div class="detail-body">
+          <div class="detail-grid">
+            <div class="detail-item elec"><div class="di-label">⚡ Électricité</div><div class="di-range"><span id="d_kwh_run">—</span><span class="di-unit">kWh</span></div><div class="di-sub">estimation centrale</div></div>
+            <div class="detail-item co2"><div class="di-label">🌡️ Carbone</div><div class="di-range"><span id="d_co2_run">—</span><span class="di-unit">tCO₂e</span></div><div class="di-sub">estimation centrale</div></div>
+            <div class="detail-item water"><div class="di-label">💧 Eau</div><div class="di-range"><span id="d_water_run">—</span><span class="di-unit">L</span></div><div class="di-sub">estimation centrale</div></div>
+          </div>
+          <div class="tokens-section"><div class="tokens-title">🔢 Tokens traités / an</div>
+            <div class="tokens-row">
+              <div class="token-chip"><span>Total</span><strong id="t_total">—</strong></div>
+              <div class="token-chip"><span>Tokens entrants — contexte (prompt, historique, documents)</span><strong id="t_req">—</strong></div>
+              <div class="token-chip"><span>Tokens sortants — génération (réponses)</span><strong id="t_resp">—</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="build_panel" style="display:none">
+        <div class="detail-header"><span>🏗️</span><span class="dh-title">Build — RAG &amp; Fine-tuning</span><span class="dh-tag">(estimation centrale)</span></div>
+        <div class="detail-body"><div class="detail-grid">
+          <div class="detail-item elec"><div class="di-label">⚡ Électricité</div><div class="di-range"><span id="d_kwh_bld">—</span><span class="di-unit">kWh</span></div></div>
+          <div class="detail-item co2"><div class="di-label">🌡️ Carbone + matériel</div><div class="di-range"><span id="d_co2_bld">—</span><span class="di-unit">tCO₂e</span></div></div>
+          <div class="detail-item water"><div class="di-label">💧 Eau</div><div class="di-range"><span id="d_water_bld">—</span><span class="di-unit">L</span></div></div>
+        </div></div>
+      </div>
+      <div class="export-zone" style="display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="export-lock-note">🔒 Passez en mode <strong>Estimation</strong> pour exporter ce résultat</span>
+        <button class="export-btn export-btn-sec" onclick="exportReport()">📤 Rapport HTML</button>
+        <button class="export-btn" onclick="exportPDF()">📄 Exporter en PDF</button>
+      </div>
+    </div>
+
+    <!-- Comparison results -->
+    <div id="cmp-results-block">
+      <!-- 1 — Badges -->
+      <div class="cmp-badges-row" id="cmp-badges-container" role="status" aria-live="polite"></div>
+      <div class="usage-type-banner" id="usage_type_badge_cmp"></div>
+      <div class="viz-bar"><span class="viz-bar-title">📊 Explorer en graphiques</span><div class="viz-chips" id="viz-chips-cmp"></div></div>
+      <div class="viz-placeholder" id="viz_placeholder_cmp"><span class="vp-ico">📊</span><div class="vp-txt">Choisissez une vue ci-dessus</div><div class="vp-sub">Le graphique sélectionné s'affichera ici</div></div>
+
+      <!-- 2 — Chart.js: 3 bar charts -->
+      <div class="cmp-chart-panel" id="panel-cmp-bars">
+        <div class="panel-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+          <span>📊 Empreinte par métrique</span>
+          <span style="font-size:11px;font-weight:400;color:var(--muted)">(barre pleine = estimation centrale · trait fin = fourchette probable)</span>
+          <div class="norm-toggle-group">
+            <button class="norm-btn active" onclick="setNorm('total',this)">Total</button>
+            <button class="norm-btn" onclick="setNorm('user',this)">/utilisateur</button>
+            <button class="norm-btn" onclick="setNorm('conv',this)">/conversation</button>
+          </div>
+        </div>
+        <div class="cmp-charts-grid">
+          <div class="cmp-chart-wrap">
+            <div class="cms-title">🌡️ Carbone (tCO₂e)</div>
+            <div style="position:relative;height:270px"><canvas id="cmp_chart_co2"></canvas></div>
+          </div>
+          <div class="cmp-chart-wrap">
+            <div class="cms-title">⚡ Électricité (kWh)</div>
+            <div style="position:relative;height:270px"><canvas id="cmp_chart_kwh"></canvas></div>
+          </div>
+          <div class="cmp-chart-wrap">
+            <div class="cms-title">💧 Eau (L)</div>
+            <div style="position:relative;height:270px"><canvas id="cmp_chart_water"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 — Distribution des classes EcoScore -->
+      <div class="cmp-chart-panel" id="panel-cmp-classes">
+        <div class="panel-title">🎯 Distribution des classes EcoScore par scénario</div>
+        <div id="cmp-class-dist-container" style="padding:16px 18px"></div>
+      </div>
+
+      <!-- 4 — Comparaison relative -->
+      <div class="cmp-chart-panel" id="cmp-relative-panel">
+        <div class="panel-title">⚡ Comparaison relative (base = 1er scénario)</div>
+        <div id="cmp-relative-container" style="padding:12px 18px 16px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- 5 — Décomposition CO₂ empilée -->
+      <div class="cmp-chart-panel" id="panel-cmp-decomp">
+        <div class="panel-title">🎯 Décomposition de l'empreinte par scénario <span style="font-size:11px;font-weight:400;color:var(--muted)">(estimation centrale)</span></div>
+        <div id="cmp_decomp_container" style="display:flex;flex-wrap:wrap;gap:14px;padding:14px 18px 6px"></div>
+        <div id="cmp_decomp_legend" class="cmp-donut-legend"></div>
+      </div>
+
+      <!-- 6 — Waterfall gains/pertes -->
+      <div class="cmp-chart-panel" id="cmp-waterfall-panel">
+        <div class="panel-title">💰 Ce que votre choix de scénario change <span style="font-size:11px;font-weight:400;color:var(--muted)">(carbone annuel, du plus sobre au plus émetteur)</span></div>
+        <div id="impact_ranking" style="display:flex;flex-direction:column;gap:10px;padding:14px 18px 16px"></div>
+      </div>
+
+      <div class="cmp-chart-panel" id="panel-cmp-table">
+        <div class="panel-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>📋 Tableau de synthèse</span>
+          <button class="norm-btn" onclick="copyCmpTable(this)" style="margin-left:auto">📋 Copier le tableau</button></div>
+        <div style="padding:6px 18px 16px;overflow-x:auto"><table class="cmp-table" id="cmp_table"></table></div>
+      </div>
+
+      <div class="cmp-chart-panel" id="panel-cmp-threshold">
+        <div class="panel-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>📈 Seuil de bascule par scénario</span><span style="font-size:11px;font-weight:400;color:var(--muted)">(même axe pour tous)</span>
+          <span class="thr-axis-toggle" style="margin-left:auto">
+            <button class="thr-axis-btn on" data-axis="users" aria-pressed="true" onclick="setThresholdAxis('users')">👥 Utilisateurs</button>
+            <button class="thr-axis-btn" data-axis="conv" aria-pressed="false" onclick="setThresholdAxis('conv')">💬 Conversations</button>
+          </span></div>
+        <div id="cmp_threshold_body" style="padding:12px 24px 4px"></div>
+        <div class="uscale-axis" id="cmp_uscale_axis" style="padding:0 24px">Nombre d'utilisateurs →</div>
+        <div id="cmp_threshold_note" style="font-size:11px;color:var(--muted);padding:6px 24px 14px"></div>
+      </div>
+
+      <div class="cmp-chart-panel" id="panel-cmp-rundetail">
+        <div class="panel-title">🔄 Run — 1 an d'utilisation par scénario <span style="font-size:11px;font-weight:400;color:var(--muted)">(estimation centrale)</span></div>
+        <div style="padding:6px 18px 12px;overflow-x:auto"><table class="cmp-table" id="cmp_run_table"></table></div>
+        <div id="cmp_build_block" style="display:none">
+          <div class="panel-title" style="border-top:1px dashed var(--border)">🏗️ Build — mise en place (une seule fois) <span style="font-size:11px;font-weight:400;color:var(--muted)">(estimation centrale, forfait matériel inclus)</span></div>
+          <div style="padding:6px 18px 16px;overflow-x:auto"><table class="cmp-table" id="cmp_build_table"></table></div>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="export-zone" style="display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="export-lock-note">🔒 Passez en mode <strong>Estimation</strong> pour exporter ce résultat</span>
+        <button class="export-btn export-btn-sec" onclick="exportReport()">📤 Rapport HTML</button>
+        <button class="export-btn" onclick="exportPDF()">📄 Exporter en PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Documentation -->
+<div id="tab-docs" class="tab-content">
+  <div style="padding:20px 28px 0;max-width:920px;margin:0 auto">
+    <div class="doc-subtabs">
+      <button class="doc-subtab active" onclick="showDocTab('simple',this)">🟢 Vue d'ensemble</button>
+      <button class="doc-subtab" onclick="showDocTab('tech',this)">⚙️ Référence technique</button>
+    </div>
+  </div>
+
+  <!-- ── VUE D'ENSEMBLE ───────────────────────────── -->
+  <div id="doctab-simple" class="doc-view active" style="padding:24px 28px;max-width:920px;margin:0 auto">
+
+    <div class="simple-hero">
+      <div class="simple-hero-title">Qu'est-ce que l'EcoScore IA ?</div>
+      <div class="simple-hero-sub">Un outil d'estimation de l'empreinte carbone annuelle d'un usage de LLM (grand modèle de langage). Il produit une note de A à G — comme l'étiquette énergie d'un appareil électroménager — en tenant compte de l'incertitude inhérente aux données disponibles.</div>
+    </div>
+
+    <h3 class="simple-section-title">📐 Comment ça marche en 3 étapes</h3>
+    <div class="simple-steps">
+      <div class="simple-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Vous décrivez votre usage</div>
+          <div class="step-text">Nombre d'utilisateurs, fréquence d'utilisation, longueur des échanges, modèle IA utilisé, localisation du datacenter, présence d'un RAG ou d'un fine-tuning.</div>
+        </div>
+      </div>
+      <div class="simple-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">L'outil teste des milliers de variantes</div>
+          <div class="step-text">Certaines données ne sont connues que par fourchette : la consommation exacte du modèle d'IA n'est pas publiée par les fournisseurs, et le coût de fabrication du matériel est estimé. Plutôt que de choisir une valeur au hasard, l'outil recalcule l'empreinte avec des milliers de combinaisons plausibles de ces hypothèses. Résultat : une <strong>fourchette probable</strong> plutôt qu'un chiffre unique trompeur.</div>
+        </div>
+      </div>
+      <div class="simple-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">L'empreinte est convertie en classe A–G</div>
+          <div class="step-text">L'estimation centrale détermine la classe, de A (très sobre) à G (critique). Si la fourchette probable chevauche deux classes, l'outil le signale : la note peut alors basculer selon les hypothèses retenues.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="simple-section-title">🌍 Ce qui est mesuré</h3>
+    <div class="simple-cards">
+      <div class="simple-card">
+        <div class="sc-icon">🌡️</div>
+        <div class="sc-title">CO₂ équivalent (tCO₂e)</div>
+        <div class="sc-text">Empreinte carbone totale en tonnes de CO₂ équivalent par an. C'est l'indicateur principal du score. Il intègre la consommation électrique multipliée par l'intensité carbone du réseau local.</div>
+      </div>
+      <div class="simple-card">
+        <div class="sc-icon">⚡</div>
+        <div class="sc-title">Électricité (kWh)</div>
+        <div class="sc-text">Énergie totale consommée par an par le datacenter pour faire tourner votre usage IA. Inclut le coefficient PUE qui tient compte des pertes liées au refroidissement et à l'infrastructure.</div>
+      </div>
+      <div class="simple-card">
+        <div class="sc-icon">💧</div>
+        <div class="sc-title">Eau (litres)</div>
+        <div class="sc-text">Consommation d'eau pour refroidir les serveurs (Scope 1 direct) et pour produire l'électricité utilisée (Scope 2 indirect, ex. centrales thermiques).</div>
+      </div>
+    </div>
+
+    <h3 class="simple-section-title">🏷️ Les classes EcoScore</h3>
+    <div class="score-scale">
+      <div class="score-scale-item score-A"><div class="ssl-letter">A</div><div class="ssl-range">&lt; 1 tCO₂e</div><div class="ssl-eg">Usage très sobre — équivalent à quelques vols courts</div></div>
+      <div class="score-scale-item score-B"><div class="ssl-letter">B</div><div class="ssl-range">1 – 5 tCO₂e</div><div class="ssl-eg">Sobre — comparable à la voiture annuelle d'un Français</div></div>
+      <div class="score-scale-item score-C"><div class="ssl-letter">C</div><div class="ssl-range">5 – 25 tCO₂e</div><div class="ssl-eg">Modéré — à surveiller et optimiser</div></div>
+      <div class="score-scale-item score-D"><div class="ssl-letter">D</div><div class="ssl-range">25 – 100 tCO₂e</div><div class="ssl-eg">Significatif — plan de réduction recommandé</div></div>
+      <div class="score-scale-item score-E"><div class="ssl-letter">E</div><div class="ssl-range">100 – 500 tCO₂e</div><div class="ssl-eg">Élevé — révision architecture nécessaire</div></div>
+      <div class="score-scale-item score-F"><div class="ssl-letter">F</div><div class="ssl-range">500 – 1 000 tCO₂e</div><div class="ssl-eg">Très élevé</div></div>
+      <div class="score-scale-item score-G"><div class="ssl-letter">G</div><div class="ssl-range">≥ 1 000 tCO₂e</div><div class="ssl-eg">Critique — équivalent à des centaines de vols long-courrier</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px">La sous-graduation (A+, A, A−) indique la position dans la bande : A+ est la partie basse (plus sobre), A− la partie haute.</p>
+
+    <h3 class="simple-section-title">📖 Glossaire des termes clés</h3>
+    <div class="glossary">
+      <div class="gloss-item"><div class="gloss-term">Token</div><div class="gloss-def">Unité de base traitée par un LLM. Environ 0,75 mot en français. Un message de 200 mots ≈ 260 tokens. Le modèle consomme de l'énergie pour lire chaque token d'entrée (encoding) et pour générer chaque token de réponse (decoding).</div></div>
+      <div class="gloss-item"><div class="gloss-term">LLM</div><div class="gloss-def">Large Language Model — grand modèle de langage (GPT-4, Claude, Gemini…). Sa taille (nombre de paramètres) influence directement sa consommation énergétique par token généré.</div></div>
+      <div class="gloss-item"><div class="gloss-term">RAG</div><div class="gloss-def">Retrieval-Augmented Generation. Technique où le modèle consulte une base documentaire à chaque requête pour enrichir sa réponse. Génère une empreinte "Run" supplémentaire (recherche à chaque appel) et une empreinte "Build" (indexation initiale de la base).</div></div>
+      <div class="gloss-item"><div class="gloss-term">Fine-tuning</div><div class="gloss-def">Ré-entraînement d'un modèle sur des données spécifiques. Opération ponctuelle (émission "Build") qui peut être coûteuse en énergie selon le volume d'exemples et le nombre d'epochs.</div></div>
+      <div class="gloss-item"><div class="gloss-term">PUE</div><div class="gloss-def">Power Usage Effectiveness — efficacité énergétique du datacenter. Un PUE de 1,36 signifie que pour 100 kWh consommés par les serveurs, 136 kWh sont prélevés au réseau (36 % de pertes pour le refroidissement, l'alimentation, etc.). Les meilleurs datacenters approchent 1,1.</div></div>
+      <div class="gloss-item"><div class="gloss-term">Intensité carbone</div><div class="gloss-def">Quantité de CO₂ émise par kWh d'électricité consommée, exprimée en gCO₂/kWh. Varie selon le mix énergétique du pays : France ≈ 105 g (nucléaire), Allemagne ≈ 615 g (charbon/gaz), Suède ≈ 47 g (hydraulique/nucléaire).</div></div>
+      <div class="gloss-item"><div class="gloss-term">WUE / EWIF</div><div class="gloss-def">Indicateurs de consommation d'eau. WUE (Water Usage Effectiveness) mesure l'eau utilisée directement pour refroidir les serveurs. EWIF (Energy-Water Impact Factor) estime l'eau consommée indirectement pour produire l'électricité.</div></div>
+      <div class="gloss-item"><div class="gloss-term">Estimation centrale &amp; fourchette probable</div><div class="gloss-def">L'outil affiche une valeur centrale — la plus représentative des milliers de variantes calculées — et une fourchette dans laquelle l'empreinte réelle a de très fortes chances de se situer. Plus la fourchette est étroite, plus l'estimation est fiable ; si elle chevauche deux classes, la note peut basculer.</div></div>
+      <div class="gloss-item"><div class="gloss-term">tCO₂e</div><div class="gloss-def">Tonne de CO₂ équivalent. Unité standard pour comparer les émissions de gaz à effet de serre. 1 tCO₂e ≈ 1 vol Paris–New York aller-retour, ou 6 000 km en voiture thermique.</div></div>
+    </div>
+
+    <h3 class="simple-section-title">💡 Comment réduire l'empreinte</h3>
+    <div class="simple-cards">
+      <div class="simple-card tip">
+        <div class="sc-icon">🤖</div>
+        <div class="sc-title">Choisir un modèle adapté</div>
+        <div class="sc-text">Un petit modèle (SLM 1–10B params) consomme 10 à 100× moins qu'un très grand modèle. Si le cas d'usage le permet, préférer un modèle plus léger.</div>
+      </div>
+      <div class="simple-card tip">
+        <div class="sc-icon">📍</div>
+        <div class="sc-title">Localiser le datacenter</div>
+        <div class="sc-text">Héberger en France ou en Suède (mix bas carbone) plutôt qu'en Allemagne ou en Pologne peut diviser l'empreinte carbone par 5 à 10, à volume égal.</div>
+      </div>
+      <div class="simple-card tip">
+        <div class="sc-icon">✂️</div>
+        <div class="sc-title">Réduire la longueur des échanges</div>
+        <div class="sc-text">Les tokens de réponse (decoding) sont le premier poste de dépense. Raccourcir les réponses ou compresser le prompt système a un impact direct proportionnel.</div>
+      </div>
+      <div class="simple-card tip">
+        <div class="sc-icon">📚</div>
+        <div class="sc-title">Optimiser le RAG</div>
+        <div class="sc-text">Limiter le nombre de documents indexés, réduire la fréquence de refresh, et diminuer le nombre de chunks injectés par requête réduit à la fois l'empreinte Build et Run.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RÉFÉRENCE TECHNIQUE ──────────────────────── -->
+  <div id="doctab-tech" class="doc-view" style="padding:24px 28px;max-width:920px;margin:0 auto">
+    <nav class="doc-nav">
+      <a href="#t1">Vue d'ensemble</a><a href="#t2">Variables</a><a href="#t3">Tokens</a>
+      <a href="#t4">Énergie Run</a><a href="#t5">Énergie Build</a><a href="#t6">Datacenter</a>
+      <a href="#t7">Monte-Carlo</a><a href="#t8">Classes A–G</a>
+    </nav>
+
+    <p style="font-size:12px;color:var(--muted);margin:0 0 14px">Cette section s'adresse aux profils techniques : elle détaille les équations, hypothèses statistiques et abaques du modèle. La lecture des résultats ne nécessite pas ces notions — voir l'onglet « Vue d'ensemble ».</p>
+    <div class="doc-section" id="t1">
+      <h2>📌 Vue d'ensemble du modèle</h2>
+      <p>L'empreinte totale est la somme de deux composantes indépendantes :</p>
+      <ul>
+        <li><strong>Run</strong> — énergie consommée à chaque inférence, cumulée sur 1 an (proportionnelle au volume d'usage).</li>
+        <li><strong>Build</strong> — énergie consommée une seule fois pour construire le système (indexation RAG, fine-tuning). Multipliée par un facteur matériel <em>mat</em> qui amortit la fabrication des GPU.</li>
+      </ul>
+      <div class="formula-box">\[CO_2^{total} = CO_2^{run} + CO_2^{build} \times (1 + mat)\]
+        <div class="c" style="margin-top:6px;font-size:12px">mat ∈ [0.25, 0.50] — surcoût carbone lié à la fabrication des GPU (incertain, tiré par Monte-Carlo)</div>
+      </div>
+      <div class="hl">💡 Toutes les variables incertaines sont modélisées par des lois log-normales. N = 5 000 tirages Monte-Carlo produisent une distribution → percentiles P5 / P25 / P50 / P75 / P95.</div>
+    </div>
+
+    <div class="doc-section" id="t2">
+      <h2>🔢 Variables d'entrée</h2>
+      <h3>Usage</h3>
+      <table class="var-table">
+        <tr><th>Variable</th><th>Description</th><th>Unité</th></tr>
+        <tr><td>n_users</td><td>Nombre d'utilisateurs actifs par an</td><td>—</td></tr>
+        <tr><td>n_conv</td><td>Conversations par utilisateur par an</td><td>—</td></tr>
+        <tr><td>n_msg</td><td>Messages échangés par conversation</td><td>—</td></tr>
+        <tr><td>req_sz</td><td>Taille d'un message utilisateur</td><td>tokens</td></tr>
+        <tr><td>resp_sz</td><td>Taille d'une réponse du modèle</td><td>tokens</td></tr>
+        <tr><td>sys_sz</td><td>Taille du system prompt (fixe, répété à chaque appel)</td><td>tokens</td></tr>
+      </table>
+      <h3>Modèle LLM</h3>
+      <table class="var-table">
+        <tr><th>Variable</th><th>Description</th><th>Unité</th></tr>
+        <tr><td>dec_min / dec_max</td><td>Énergie de décodage — borne basse (P5) et haute (P95)</td><td>Wh / 100k tokens</td></tr>
+        <tr><td>enc</td><td>Énergie d'encodage = dec / 100 (l'encodage est parallélisable, ~100× moins coûteux)</td><td>Wh / 100k tokens</td></tr>
+      </table>
+      <h3>RAG (si activé)</h3>
+      <table class="var-table">
+        <tr><th>Variable</th><th>Description</th><th>Unité</th></tr>
+        <tr><td>n_docs</td><td>Nombre de documents dans la base</td><td>—</td></tr>
+        <tr><td>n_pages</td><td>Pages moyennes par document</td><td>—</td></tr>
+        <tr><td>n_refresh</td><td>Nombre de re-indexations complètes par an</td><td>—</td></tr>
+      </table>
+      <h3>Fine-tuning (si activé)</h3>
+      <table class="var-table">
+        <tr><th>Variable</th><th>Description</th><th>Unité</th></tr>
+        <tr><td>ft_ex</td><td>Nombre d'exemples d'entraînement</td><td>—</td></tr>
+        <tr><td>ft_ep</td><td>Nombre d'epochs</td><td>—</td></tr>
+      </table>
+    </div>
+
+    <div class="doc-section" id="t3">
+      <h2>🧮 Comptage des tokens</h2>
+      <p>Nombre total de requêtes sur l'année :</p>
+      <div class="formula-box">\[n_{req} = n_{users} \times n_{conv} \times n_{msg}\]</div>
+      <p>Tokens d'entrée totaux (sans historique) :</p>
+      <div class="formula-box">\[tok_{req} = n_{req} \times (req_{sz} + sys_{sz})\]
+        <div class="c" style="font-size:12px;margin-top:4px">Avec historique conversationnel activé, chaque message reçoit le contexte de tous les messages précédents — la somme est quadratique en n_msg.</div>
+      </div>
+      <p>Tokens de sortie totaux :</p>
+      <div class="formula-box">\[tok_{resp} = n_{req} \times resp_{sz}\]</div>
+      <p>Si RAG activé, 3 chunks de 750 tokens sont injectés dans chaque requête :</p>
+      <div class="formula-box">\[tok_{req} \mathrel{+}= 3 \times 750 \times n_{req}\]</div>
+    </div>
+
+    <div class="doc-section" id="t4">
+      <h2>⚡ Énergie Run (annuelle)</h2>
+      <p>Énergie d'encodage (lecture des tokens d'entrée) et de décodage (génération des tokens de sortie) :</p>
+      <div class="formula-box">\[kWh_{enc} = enc \cdot \frac{tok_{req}}{10^5} \qquad kWh_{dec} = dec \cdot \frac{tok_{resp}}{10^5}\]</div>
+      <p>Si RAG activé — énergie d'encodage pour le refresh périodique de l'index (12 mois) :</p>
+      <div class="formula-box">\[kWh_{RAG}^{run} = enc \cdot n_{refresh} \cdot n_{pages} \cdot \frac{750}{10^5} \times 12\]</div>
+      <p>Application du PUE (pertes datacenter) puis conversion en CO₂ et eau :</p>
+      <div class="formula-box">\[kWh_{run} = \bigl(kWh_{enc} + kWh_{dec} + kWh_{RAG}^{run}\bigr) \times PUE\]
+\[CO_2^{run} = kWh_{run} \times \frac{carbon}{10^6}\]
+\[eau^{run} = \bigl(kWh_{enc} + kWh_{dec} + kWh_{RAG}^{run}\bigr) \times (WUE + EWIF)\]</div>
+      <div class="hl">⚠️ Le PUE s'applique à l'énergie <em>avant</em> conversion en CO₂ et eau. L'eau est calculée sur l'énergie brute (hors PUE) car WUE et EWIF intègrent déjà les pertes thermiques.</div>
+    </div>
+
+    <div class="doc-section" id="t5">
+      <h2>🏗️ Énergie Build (one-shot)</h2>
+      <p>Indexation RAG — encodage de tout le corpus documentaire :</p>
+      <div class="formula-box">\[kWh_{RAG}^{build} = enc \cdot \frac{n_{docs} \times n_{pages} \times 750}{10^5}\]</div>
+      <p>Fine-tuning — les tokens d'entrée sont encodés, les tokens de sortie décodés (forward + backward pass ≈ 3×) :</p>
+      <div class="formula-box">\[tok_{in} = ft_{ex} \times ft_{ep} \times req_{sz} \qquad tok_{out} = ft_{ex} \times ft_{ep} \times resp_{sz}\]
+\[kWh_{FT} = \frac{tok_{in} \cdot dec \;+\; tok_{out} \cdot dec \times 3}{10^5}\]</div>
+      <p>Application du PUE, conversion CO₂, et surcoût matériel (tiré par Monte-Carlo) :</p>
+      <div class="formula-box">\[CO_2^{build} = \bigl(kWh_{RAG}^{build} + kWh_{FT}\bigr) \times PUE \times \frac{carbon}{10^6} \times (1 + mat)\]
+        <div class="c" style="font-size:12px;margin-top:4px">mat ∈ [0.25, 0.50] — tiré par Monte-Carlo à chaque simulation</div>
+      </div>
+    </div>
+
+    <div class="doc-section" id="t6">
+      <h2>🌍 Paramètres Datacenter</h2>
+      <p>Valeurs par défaut utilisées pour chaque pays. PUE et intensité carbone sont les principaux leviers d'action.</p>
+      <table class="var-table">
+        <tr><th>Pays</th><th>PUE</th><th>gCO₂/kWh</th><th>WUE S1 (L/kWh)</th><th>EWIF S2 (L/kWh)</th></tr>
+        <tr><td>France</td><td>1.36</td><td>105</td><td>1.80</td><td>1.87</td></tr>
+        <tr><td>Suède</td><td>1.37</td><td>47</td><td>1.50</td><td>4.53</td></tr>
+        <tr><td>Allemagne</td><td>1.56</td><td>615</td><td>1.20</td><td>0.75</td></tr>
+        <tr><td>Irlande</td><td>1.20</td><td>617</td><td>1.00</td><td>0.48</td></tr>
+        <tr><td>Pologne</td><td>1.50</td><td>635</td><td>1.20</td><td>1.31</td></tr>
+        <tr><td>États-Unis</td><td>1.43</td><td>368</td><td>1.80</td><td>1.33</td></tr>
+        <tr><td>Canada</td><td>1.31</td><td>69</td><td>1.50</td><td>6.67</td></tr>
+        <tr><td>Chine</td><td>1.60</td><td>534</td><td>2.00</td><td>4.01</td></tr>
+        <tr><td>Japon</td><td>1.62</td><td>516</td><td>1.50</td><td>0.81</td></tr>
+      </table>
+    </div>
+
+    <div class="doc-section" id="t7">
+      <h2>🎲 Méthode Monte-Carlo</h2>
+      <p>Les paramètres incertains (énergie du modèle <em>dec</em>, surcoût matériel <em>mat</em>) suivent des lois log-normales calibrées sur les bornes P5/P95 fournies :</p>
+      <div class="formula-box">\[\mu = \frac{\ln P_5 + \ln P_{95}}{2} \qquad \sigma = \frac{\ln P_{95} - \ln P_5}{2 \times 1.6449}\]
+\[X \sim \text{LogNormal}(\mu, \sigma^2) \qquad Z \sim \mathcal{N}(0,1) \qquad X = e^{\,\mu + \sigma Z}\]</div>
+      <p>N = 5 000 tirages indépendants. Les résultats sont triés pour extraire les percentiles P5, P25, P50, P75, P95. La classe EcoScore est attribuée à chaque tirage, ce qui donne une distribution de probabilité sur les classes A–G.</p>
+      <div class="hl">La méthode Box-Muller est utilisée pour générer Z ∈ 𝒩(0,1) sans dépendance externe.</div>
+    </div>
+
+    <div class="doc-section" id="t8">
+      <h2>🏷️ Classes A–G et sous-graduation</h2>
+      <p>Seuils en tCO₂e/an. La sous-graduation découpe chaque bande en tiers selon la position logarithmique :</p>
+      <table class="var-table">
+        <tr><th>Classe</th><th>Seuil inf.</th><th>Seuil sup.</th><th>Sous-graduation</th></tr>
+        <tr><td style="color:var(--sa);font-weight:800">A</td><td>0</td><td>&lt; 1</td><td>A+ (log &lt; 33%) · A · A− (log &gt; 67%)</td></tr>
+        <tr><td style="color:var(--sb);font-weight:800">B</td><td>1</td><td>&lt; 5</td><td>B+ · B · B−</td></tr>
+        <tr><td style="color:#40804a;font-weight:800">C</td><td>5</td><td>&lt; 25</td><td>C+ · C · C−</td></tr>
+        <tr><td style="color:#8a6500;font-weight:800">D</td><td>25</td><td>&lt; 100</td><td>D+ · D · D−</td></tr>
+        <tr><td style="color:var(--se);font-weight:800">E</td><td>100</td><td>&lt; 500</td><td>E+ · E · E−</td></tr>
+        <tr><td style="color:var(--sf);font-weight:800">F</td><td>500</td><td>&lt; 1 000</td><td>F+ · F · F−</td></tr>
+        <tr><td style="color:var(--sg);font-weight:800">G</td><td>1 000</td><td>+∞</td><td>G</td></tr>
+      </table>
+      <div class="formula-box">\[\text{position} = \frac{\log_{10}(v) - \log_{10}(lo)}{\log_{10}(hi) - \log_{10}(lo)}\]
+        <div class="c" style="font-size:12px;margin-top:4px">position &lt; 0.33 → "+" (tiers bas) · 0.33–0.67 → neutre · &gt; 0.67 → "−" (tiers haut)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function showDocTab(id,btn){
+  document.querySelectorAll('.doc-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.doc-subtab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('doctab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// DONNÉES
+// ═══════════════════════════════════════════════════
+const DATACENTER={
+  "France":{PUE:1.36,carbon:105,wue:1.80,ewif:1.87},
+  "Suède":{PUE:1.37,carbon:47,wue:1.50,ewif:4.53},
+  "Allemagne":{PUE:1.56,carbon:615,wue:1.20,ewif:0.75},
+  "Irlande":{PUE:1.20,carbon:617,wue:1.00,ewif:0.48},
+  "Pologne":{PUE:1.50,carbon:635,wue:1.20,ewif:1.31},
+  "Etats Unis":{PUE:1.43,carbon:368,wue:1.80,ewif:1.33},
+  "Canada":{PUE:1.31,carbon:69,wue:1.50,ewif:6.67},
+  "Chine":{PUE:1.60,carbon:534,wue:2.00,ewif:4.01},
+  "Japon":{PUE:1.62,carbon:516,wue:1.50,ewif:0.81}
+};
+const MODELS=[
+  // Valeurs kWh/100K tokens — source : [Outil] Ecoscore - Modèle d'estimation.xlsx (juin 2026)
+  ["Anthropic","Claude Opus 4.6","",0.348,0.54375,135],
+  ["Anthropic","Claude Sonnet 4.6","",0.136,0.2125,88],
+  ["Anthropic","Claude Sonnet 4.0","Faible",0.1215,0.2025,88],
+  ["Anthropic","Claude 3.5 Sonnet","Moyenne",0.12375,0.20625,440],
+  ["Anthropic","Claude 3 Haiku","Moyenne",4.1475,6.9125,150],
+  ["OpenAI","GPT 5","Faible",0.10875,0.18125,60],
+  ["OpenAI","GPT 5 mini","Faible",0.01215,0.020249,47],
+  ["OpenAI","GPT 5 nano","Faible",0.0041025,0.0068375,11],
+  ["OpenAI","GPT-4o","Moyenne",0.12,0.2,220],
+  ["OpenAI","GPT-4o mini","Faible",0.0046275,0.0077125,8],
+  ["OpenAI","GPT-4 Turbo","Moyenne",0.37125,0.61875,176],
+  ["OpenAI","GPT-4","Moyenne",1.2525,2.0875,352],
+  ["OpenAI","GPT-3.5 Turbo","Moyenne",0.010575,0.017625,null],
+  ["Google","Gemini 2.5 Flash","Faible",0.1248,0.195,88],
+  ["Google","Gemini 2.5 Pro","Moyenne",1.3275,2.2125,400],
+  ["Google","Gemini 1.5 Pro","Moyenne",6.585,10.975,null],
+  ["Google","Gemini 1.5 Flash","Faible",0.31425,0.52375,8],
+  ["Meta","Llama 3.1 405B","Élevée",17.85,29.75,405],
+  ["Meta","Llama 3.2 11B","Faible",0.31425,0.52375,11],
+  ["Meta","Llama 3.2 8B","Faible",0.28275,0.47125,8],
+  ["Meta","Llama 3.2 3B","Faible",0.23025,0.38375,3],
+  ["Meta","Llama 3.2 1B","Faible",0.20925,0.34875,1],
+  ["Meta","Llama 3.1 8B","Faible",0.28275,0.47125,8],
+  ["Meta","Llama 3.1 70B","Moyenne",0.9375,1.5625,70],
+  ["Meta","Llama 3.1 Nemotron 70B","Moyenne",0.9375,1.5625,70],
+  ["Meta","Llama 3.2 90B (Vision)","Moyenne",1.1475,1.9125,90],
+  ["Mistral","Ministral 3B","Faible",0.0033225,0.0055375,3],
+  ["Mistral","Ministral 8B","Faible",0.0036075,0.006013,8],
+  ["Mistral","Mistral Small","Faible",0.0043275,0.0072125,12.9],
+  ["Mistral","Mixtral 8x22B","Faible",0.0042225,0.0070375,39.1],
+  ["Mistral","Mixtral 8x7B","Faible",0.0008325,0.0013875,8],
+  ["Mistral","Mistral NeMo","Faible",0.00387,0.00645,12],
+  ["Mistral","Codestral","Faible",0.004155,0.006925,22],
+  ["Mistral","Pixtral 12B","Faible",0.32475,0.54125,12],
+  ["Mistral","Mistral Large 2","Moyenne",0.050796,0.051822,540],
+  ["Cohere","Command R+","Moyenne",0.043061,0.043931,104],
+  ["Générique","Très grand LLM (>100B)","Élevée",1.0,15.0,null],
+  ["Générique","LLM (10 à 100B)","Moyenne",1.0,10.0,null],
+  ["Générique","SLM (1 à 10B)","Faible",0.15,1.0,null]
+];
+const TOKENS_PER_PAGE=750,N_CHUNKS=3,N_TOKEN_CHUNK=750;
+const MAT_MIN=0.25,MAT_MAX=0.50;
+const CONV_PARIS_NY=1.7,CONV_KWH_FR=2223,CONV_WATER_FR=54000;
+const THRESHOLDS=[1,5,25,100,500,1000];
+const LETTERS=['A','B','C','D','E','F','G'];
+const N_MC=5000;
+
+// ═══════════════════════════════════════════════════
+// MONTE-CARLO
+// ═══════════════════════════════════════════════════
+function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function lnParams(lo,hi){const k=1.6449;if(lo<=0||hi<=lo){const v=Math.max(hi,lo,1e-12);return{mu:Math.log(v),sigma:0.05};}return{mu:(Math.log(lo)+Math.log(hi))/2,sigma:(Math.log(hi)-Math.log(lo))/(2*k)};}
+function sampleLN(p){return Math.exp(p.mu+p.sigma*randn());}
+function pct(s,p){const i=Math.max(0,Math.min(s.length-1,Math.round(p*(s.length-1))));return s[i];}
+function getScore(v){for(let i=0;i<THRESHOLDS.length;i++)if(v<THRESHOLDS[i])return LETTERS[i];return'G';}
+function getSubScore(v){
+  const ext=[0,...THRESHOLDS];
+  for(let i=0;i<THRESHOLDS.length;i++){
+    if(v<THRESHOLDS[i]){
+      const lo=ext[i],hi=THRESHOLDS[i];
+      if(lo<=0)return LETTERS[i];
+      const pos=(Math.log10(v)-Math.log10(lo))/(Math.log10(hi)-Math.log10(lo));
+      if(pos<0.33)return LETTERS[i]+'+';
+      if(pos>0.67)return LETTERS[i]+'−';
+      return LETTERS[i];
+    }
+  }
+  return'G';
+}
+
+// ═══════════════════════════════════════════════════
+// CALCULS
+// ═══════════════════════════════════════════════════
+function computeTokens(inp){
+  const n_req=inp.n_users*inp.n_conv*inp.n_msg;
+  let tok_req;
+  if(inp.history){
+    const per_conv=inp.n_msg*inp.sys_sz+inp.req_sz*inp.n_msg*(inp.n_msg+1)/2+(inp.n_msg-1)*(inp.n_msg/2)*inp.resp_sz;
+    tok_req=per_conv*inp.n_users*inp.n_conv;
+  }else{tok_req=n_req*(inp.req_sz+inp.sys_sz);}
+  if(inp.rag)tok_req+=N_TOKEN_CHUNK*N_CHUNKS*n_req;
+  return{tok_req,tok_resp:n_req*inp.resp_sz};
+}
+function computeOnce(inp,dec,mat){
+  const enc=dec/100;
+  const kwh_enc=enc*inp.tok_req/1e5;
+  const kwh_dec=dec*inp.tok_resp/1e5;
+  let kwh_rag_run=0;
+  if(inp.rag)kwh_rag_run=enc*inp.n_refresh*inp.n_pages*TOKENS_PER_PAGE*12/1e5;
+  const kwh_run_raw=kwh_enc+kwh_dec+kwh_rag_run;
+  const kwh_run=kwh_run_raw*inp.pue;
+  const co2_run=kwh_run*inp.carbon/1e6;
+  const wat_run=kwh_run_raw*(inp.wue+inp.ewif);
+  let kwh_rag_bld=0,kwh_ft=0;
+  if(inp.rag)kwh_rag_bld=enc*inp.n_docs*inp.n_pages*TOKENS_PER_PAGE/1e5;
+  if(inp.ft){const ti=inp.ft_ex*inp.ft_ep*inp.req_sz;const to=inp.ft_ex*inp.ft_ep*inp.resp_sz;kwh_ft=(ti*enc+to*dec+to*dec*2)/1e5;}
+  const kwh_bld_raw=(kwh_rag_bld+kwh_ft)*inp.pue;
+  const co2_bld=kwh_bld_raw*inp.carbon/1e6*(1+mat);
+  const wat_bld=(kwh_rag_bld+kwh_ft)*(inp.wue+inp.ewif);
+  return{co2_tot:co2_run+co2_bld,kwh_tot:kwh_run+kwh_bld_raw,wat_tot:wat_run+wat_bld,co2_run,kwh_run,wat_run,co2_bld,kwh_bld:kwh_bld_raw,wat_bld};
+}
+function runMonteCarlo(inp){
+  const decP=lnParams(inp.dec_min,inp.dec_max);
+  const matP=lnParams(MAT_MIN,MAT_MAX);
+  const a={co2:[],kwh:[],water:[],co2_run:[],kwh_run:[],wat_run:[],co2_bld:[],kwh_bld:[],wat_bld:[]};
+  for(let i=0;i<N_MC;i++){
+    const dec=sampleLN(decP);const mat=inp.hasBuild?sampleLN(matP):0;
+    const s=computeOnce(inp,dec,mat);
+    a.co2.push(s.co2_tot);a.kwh.push(s.kwh_tot);a.water.push(s.wat_tot);
+    a.co2_run.push(s.co2_run);a.kwh_run.push(s.kwh_run);a.wat_run.push(s.wat_run);
+    a.co2_bld.push(s.co2_bld);a.kwh_bld.push(s.kwh_bld);a.wat_bld.push(s.wat_bld);
+  }
+  Object.keys(a).forEach(k=>a[k].sort((x,y)=>x-y));
+  const stats=k=>({p5:pct(a[k],.05),p25:pct(a[k],.25),p50:pct(a[k],.5),p75:pct(a[k],.75),p95:pct(a[k],.95)});
+  const counts={};LETTERS.forEach(c=>counts[c]=0);
+  a.co2.forEach(v=>counts[getScore(v)]++);
+  const classProbs={};LETTERS.forEach(c=>classProbs[c]=counts[c]/N_MC);
+  const topClasses=LETTERS.map(c=>({cls:c,prob:classProbs[c]})).filter(x=>x.prob>.005).sort((x,y)=>y.prob-x.prob);
+  const medCo2=pct(a.co2,.5);
+  return{
+    co2:stats('co2'),kwh:stats('kwh'),water:stats('water'),
+    co2_run_p50:pct(a.co2_run,.5),kwh_run_p50:pct(a.kwh_run,.5),wat_run_p50:pct(a.wat_run,.5),
+    co2_bld_p50:pct(a.co2_bld,.5),kwh_bld_p50:pct(a.kwh_bld,.5),wat_bld_p50:pct(a.wat_bld,.5),
+    classProbs,topClasses,subScore:getSubScore(medCo2),
+    tok_req:inp.tok_req,tok_resp:inp.tok_resp,hasBuild:inp.hasBuild
+  };
+}
+function computeFull(inp,dec,mat){const toks=computeTokens(inp);return computeOnce({...inp,tok_req:toks.tok_req,tok_resp:toks.tok_resp},dec,mat);}
+function computeDecomposition(inp){
+  // Reprend exactement la logique de computeOnce au point médian dec0/mat0
+  const dec0=Math.exp((Math.log(Math.max(inp.dec_min,1e-12))+Math.log(Math.max(inp.dec_max,1e-12)))/2);
+  const mat0=(MAT_MIN+MAT_MAX)/2;
+  const enc=dec0/100;
+  const toks=computeTokens(inp);
+  const tok_req=toks.tok_req,tok_resp=toks.tok_resp;
+  // Runtime — inference (tok_req/tok_resp déjà × n_users × n_conv × n_msg)
+  const kwh_enc=enc*tok_req/1e5;
+  const kwh_dec=dec0*tok_resp/1e5;
+  let kwh_rag_run=0;
+  if(inp.rag)kwh_rag_run=enc*inp.n_refresh*inp.n_pages*TOKENS_PER_PAGE*12/1e5;
+  const co2_enc=kwh_enc*inp.pue*inp.carbon/1e6;
+  const co2_dec=kwh_dec*inp.pue*inp.carbon/1e6;
+  const co2_rag_run=kwh_rag_run*inp.pue*inp.carbon/1e6;
+  // Build
+  let kwh_rag_bld=0,kwh_ft=0;
+  if(inp.rag)kwh_rag_bld=enc*inp.n_docs*inp.n_pages*TOKENS_PER_PAGE/1e5;
+  if(inp.ft){const ti=inp.ft_ex*inp.ft_ep*inp.req_sz;const to=inp.ft_ex*inp.ft_ep*inp.resp_sz;kwh_ft=(ti*enc+to*dec0+to*dec0*2)/1e5;}
+  const co2_rag_bld=kwh_rag_bld*inp.pue*inp.carbon/1e6*(1+mat0);
+  const co2_ft=kwh_ft*inp.pue*inp.carbon/1e6*(1+mat0);
+  const total=co2_enc+co2_dec+co2_rag_run+co2_rag_bld+co2_ft||1;
+  return{total,co2_enc,co2_dec,co2_rag_run,co2_rag_bld,co2_ft};
+}
+
+// ═══════════════════════════════════════════════════
+// ÉTAT GLOBAL
+// ═══════════════════════════════════════════════════
+let compareMode=false,compareAxis='model',numScenarios=2;
+let usageType='conv'; // 'conv' (conversationnel) ou 'batch' (industriel)
+
+function renderUsageTypeBadges(){
+  const lbl=usageType==='batch'?'🏭 Usage industriel (batch)':'🗨️ Usage conversationnel';
+  const single=document.getElementById('usage_type_badge_single');
+  if(single)single.textContent=lbl;
+  const cmp=document.getElementById('usage_type_badge_cmp');
+  if(cmp)cmp.textContent=(usageType==='batch'?'🏭':'🗨️')+' Tous les scénarios de cette comparaison partagent le même type d\u2019usage : '+(usageType==='batch'?'industriel (batch)':'conversationnel')+'.';
+}
+function setUsageType(val,el){
+  usageType=val;
+  document.querySelectorAll('.usage-type-pills .mode-pill').forEach(p=>p.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const isBatch=val==='batch';
+  // Champs conversationnels masqués/forcés en mode industriel (sans réécrire la logique de calcul)
+  document.getElementById('conv-only-fields').style.display=isBatch?'none':'contents';
+  document.getElementById('history-toggle-row').style.display=isBatch?'none':'';
+  if(isBatch){
+    document.getElementById('n_yearly_conv').value='1';
+    document.getElementById('n_messages').value='1';
+    document.getElementById('bool_history').checked=false;
+  }else{
+    if(document.getElementById('n_yearly_conv').value==='1')document.getElementById('n_yearly_conv').value='250';
+    if(document.getElementById('n_messages').value==='1')document.getElementById('n_messages').value='5';
+  }
+  // Période (/an ou /jour) uniquement pertinente en industriel
+  document.getElementById('n_users_period').style.display=isBatch?'':'none';
+  // Libellés dynamiques
+  document.getElementById('n_users_label').textContent=isBatch?'Volume de requêtes traitées':"Nombre d'utilisateurs";
+  document.getElementById('request_size_label').textContent=isBatch?'Document / donnée en entrée':'Requête utilisateur';
+  // Rafraîchir les libellés dépendants (axe de comparaison, seuil de bascule)
+  if(typeof buildScenarioStrip==='function'&&compareMode)buildScenarioStrip();
+  if(typeof updateThresholdAxisAvailability==='function')updateThresholdAxisAvailability();
+  renderUsageTypeBadges();
+  if(lastResults)handleCalculate();
+}
+let cmpCharts={};
+let lastResults=null;
+let normMode='total';
+let lastCmpResults=null;
+const SC_COLORS={A:'#00a857',B:'#0f4c97',C:'#008cc8',D:'#f0b43c',E:'#e05252'};
+const SC_LETTERS=['A','B','C','D','E'];
+const MAX_SCENARIOS=5;
+
+// ═══════════════════════════════════════════════════
+// CALCULATEUR — Standard
+// ═══════════════════════════════════════════════════
+function calculate(){
+  const gv=id=>parseFloat(document.getElementById(id).value)||0;
+  const gc=id=>document.getElementById(id).checked;
+  const getCat=(s,c)=>{const v=document.getElementById(s).value;return v==='custom'?gv(c):parseFloat(v);};
+  let n_users=gv('n_users'),n_conv=gv('n_yearly_conv'),n_msg=gv('n_messages');
+  let history=gc('bool_history');
+  if(usageType==='batch'){
+    const period=document.getElementById('n_users_period')?.value;
+    if(period==='jour')n_users*=365;
+    n_conv=1;n_msg=1;history=false;
+  }
+  const req_sz=getCat('request_size_cat','request_size_val'),resp_sz=getCat('response_size_cat','response_size_val'),sys_sz=getCat('systemprompt_cat','systemprompt_val');
+  const rag=gc('bool_rag'),ft=gc('bool_ft');
+  const n_docs=gv('n_docs'),n_pages=gv('n_pages'),n_refresh=gv('n_docs_refresh');
+  const ft_ex=getCat('ft_examples_cat','ft_examples_val'),ft_ep=getCat('ft_epochs_cat','ft_epochs_val');
+  const idx=+document.getElementById('model_select').value;
+  const[provName,modelName,,dec_min,dec_max]=MODELS[idx];
+  const dc=getDC();
+  const dcSel=document.getElementById('dc_country').value;
+  const dcName=dcSel==='autre'?'Personnalisé':dcSel;
+  const toks=computeTokens({n_users,n_conv,n_msg,req_sz,resp_sz,sys_sz,history,rag});
+  const rawInp={dec_min,dec_max,tok_req:toks.tok_req,tok_resp:toks.tok_resp,
+    pue:dc.PUE,carbon:dc.carbon,wue:dc.wue,ewif:dc.ewif,rag,ft,n_refresh,n_pages,n_docs,
+    req_sz,resp_sz,ft_ex,ft_ep,hasBuild:rag||ft,n_users,n_conv,n_msg,sys_sz,history,
+    modelName:provName+' '+modelName,dcName};
+  const result=runMonteCarlo(rawInp);
+  result.rawInp=rawInp;
+  result.decomp=computeDecomposition(rawInp);
+  // Score déterministe (ancienne méthode : fourchette dec_min → dec_max)
+  const matMed=rawInp.hasBuild?Math.exp((Math.log(MAT_MIN)+Math.log(MAT_MAX))/2):0;
+  const detLo=computeOnce(rawInp,dec_min,matMed);
+  const detHi=computeOnce(rawInp,dec_max,matMed);
+  result.detScoreLo=getSubScore(detLo.co2_tot);
+  result.detScoreHi=getSubScore(detHi.co2_tot);
+  result.detClassLo=getScore(detLo.co2_tot);
+  result.detClassHi=getScore(detHi.co2_tot);
+  lastResults={type:'single',data:result};
+  display(result);
+}
+
+function handleCalculate(){if(compareMode)calculateComparison();else calculate();}
+
+// ═══════════════════════════════════════════════════
+// SÉLECTEUR DE GRAPHIQUES
+// ═══════════════════════════════════════════════════
+const VIZ_PANELS={
+  range:{label:'📊 Fourchette (box plots)',ids:['panel-range'],mode:'single'},
+  peruser:{label:'👤 Par utilisateur',ids:['panel-peruser'],mode:'single'},
+  decomp:{label:'🎯 Décomposition',ids:['panel-decomp'],mode:'single'},
+  levers:{label:'🔧 Leviers de sobriété',ids:['panel-levers'],mode:'single'},
+  threshold:{label:'📈 Seuil de bascule',ids:['panel-threshold'],mode:'single'},
+  cmpBars:{label:'📊 Empreinte par métrique',ids:['panel-cmp-bars'],mode:'cmp'},
+  cmpClasses:{label:'🎯 Distribution des classes',ids:['panel-cmp-classes'],mode:'cmp'},
+  cmpRel:{label:'⚡ Comparaison relative',ids:['cmp-relative-panel'],mode:'cmp'},
+  cmpDecomp:{label:'🔬 Décomposition empilée',ids:['panel-cmp-decomp'],mode:'cmp'},
+  cmpWaterfall:{label:'💰 Impact du choix',ids:['cmp-waterfall-panel'],mode:'cmp'},
+  cmpTable:{label:'📋 Tableau de synthèse',ids:['panel-cmp-table'],mode:'cmp'},
+  cmpThreshold:{label:'📈 Seuil de bascule',ids:['panel-cmp-threshold'],mode:'cmp'},
+};
+// Sélection exclusive : un seul graphique affiché à la fois ('none' = accueil, 'all' = vue d'ensemble)
+const vizSelected={single:'none',cmp:'none'};
+let lastHasBuild=false;
+function buildVizChips(){
+  [['viz-chips-single','single'],['viz-chips-cmp','cmp']].forEach(([cid,mode])=>{
+    const host=document.getElementById(cid);if(!host)return;
+    const chips=[...Object.entries(VIZ_PANELS).filter(([,v])=>v.mode===mode).map(([k,v])=>[k,v.label]),['all','🗂️ Tout afficher']];
+    host.innerHTML=chips.map(([k,lbl])=>
+      `<button type="button" class="viz-chip${vizSelected[mode]===k?' on':''}" data-mode="${mode}" data-viz="${k}" aria-pressed="${vizSelected[mode]===k}" onclick="selectViz('${mode}','${k}')">${lbl}</button>`).join('');
+  });
+}
+function selectViz(mode,k){
+  vizSelected[mode]=k;
+  document.querySelectorAll(`.viz-chip[data-mode="${mode}"]`).forEach(c=>{
+    const on=c.dataset.viz===k;
+    c.classList.toggle('on',on);
+    c.setAttribute('aria-pressed',on);
+  });
+  applyVizPrefs();
+}
+function applyVizPrefs(){
+  // Accueil : visible tant qu'aucune vue n'est choisie
+  [['single','viz_placeholder_single'],['cmp','viz_placeholder_cmp']].forEach(([mode,pid])=>{
+    const ph=document.getElementById(pid);
+    if(ph)ph.style.display=vizSelected[mode]==='none'?'':'none';
+  });
+  Object.entries(VIZ_PANELS).forEach(([k,v])=>v.ids.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const sel=vizSelected[v.mode];
+    el.style.display=(sel==='all'||sel===k)?'':'none';
+  }));
+}
+
+// ═══════════════════════════════════════════════════
+// NOUVEAUX GRAPHIQUES (mode simple)
+// ═══════════════════════════════════════════════════
+const singleCharts={};
+const CLS_HEX={A:'#1a7a4a',B:'#4caf50',C:'#c5d92d',D:'#f7c948',E:'#f08c00',F:'#e8590c',G:'#d32f2f'};
+
+// Formatage intelligent des unités pour les petites quantités
+function fmtCO2u(t){if(t>=1)return fmt(t)+' tCO₂e';const kg=t*1000;if(kg>=1)return fmt(kg)+' kg CO₂e';return fmt(kg*1000)+' g CO₂e';}
+function fmtEu(kwh){if(kwh>=1)return fmt(kwh)+' kWh';return fmt(kwh*1000)+' Wh';}
+function fmtWu(l){if(l>=1)return fmt(l)+' L';return fmt(l*1000)+' mL';}
+
+// Équivalences micro-échelle : voiture thermique ≈ 220 g CO₂e/km, charge smartphone ≈ 12 Wh, verre d'eau = 25 cL
+function eqCar(t){const km=t*1e6/220;if(km>=1)return fmt(km)+' km en voiture';return fmt(km*1000)+' m en voiture';}
+function eqPhone(kwh){const c=kwh/0.012;if(c>=1)return fmt(c)+' charges de smartphone';return fmt(c*100)+' % d\u2019une charge de smartphone';}
+function eqGlass(l){const g=l/0.25;if(g>=1)return fmt(g)+' verres d\u2019eau';return fmt(g*100)+' % d\u2019un verre d\u2019eau';}
+
+function renderEcoScale(r){
+  const host=document.getElementById('ecoscale'),thr=document.getElementById('ecoscale_thr');
+  if(!host)return;
+  const T=[1,5,25,100,500,1000],L=['A','B','C','D','E','F','G'];
+  // Position piecewise-log : 7 segments égaux, interpolation log à l'intérieur de chaque classe
+  const valToX=v=>{
+    v=Math.max(v,1e-9);
+    let s=0;while(s<6&&v>=T[s])s++;
+    const lo=s===0?T[0]/100:T[s-1],hi=s===6?T[5]*100:T[s];
+    let f=(Math.log10(v)-Math.log10(lo))/(Math.log10(hi)-Math.log10(lo));
+    f=Math.max(0,Math.min(1,f));
+    return (s+f)/7*100;
+  };
+  const cls=getScore(r.co2.p50);
+  const x5r=valToX(r.co2.p5),x95r=valToX(r.co2.p95);
+  // Largeur minimale de 2,2 % pour rester visible quand la fourchette est resserrée
+  const MINW=2.2,w=x95r-x5r;
+  const pad=w<MINW?(MINW-w)/2:0;
+  const x5=Math.max(0,x5r-pad),x95=Math.min(100,x95r+pad);
+  const x50=Math.max(2,Math.min(98,valToX(r.co2.p50)));
+  host.innerHTML=L.map(l=>`<div class="es-seg score-${l}${l===cls?' active':''}" title="Classe ${l}${l===cls?' — classe médiane de ce cas d\u2019usage':''}">${l}</div>`).join('')
+    +`<div class="es-band" style="left:${x5}%;width:${x95-x5}%" title="Fourchette probable : ${fmt(r.co2.p5)} – ${fmt(r.co2.p95)} tCO₂e/an"></div>`
+    +`<div class="es-marker" style="left:${x50}%"><div class="esm-val">${fmt(r.co2.p50)} tCO₂e</div><div class="esm-tri"></div></div>`;
+  thr.innerHTML=T.map((t,i)=>`<span style="left:${(i+1)/7*100}%">${t>=1000?'1 000':t}</span>`).join('');
+}
+
+function renderPerUser(r){
+  const body=document.getElementById('peruser_body');
+  if(!body||!r.rawInp)return;
+  const raw=r.rawInp;
+  const nU=Math.max(raw.n_users,1),nC=Math.max(raw.n_conv,1),nM=Math.max(raw.n_msg,1);
+  const rows=usageType==='batch'
+    ?[{icon:'📄',label:'Par requête traitée',div:nU,sub:'document + réponse'}]
+    :[
+    {icon:'👤',label:'Par utilisateur / an',div:nU,sub:`${fmt(nC)} conversations`},
+    {icon:'💬',label:'Par conversation',div:nU*nC,sub:`${fmt(nM)} messages`},
+    {icon:'✉️',label:'Par message',div:nU*nC*nM,sub:'requête + réponse'},
+  ];
+  body.innerHTML=rows.map(x=>{
+    const co2=r.co2.p50/x.div,kwh=r.kwh.p50/x.div,wat=r.water.p50/x.div;
+    return`
+    <div style="display:flex;align-items:center;gap:14px;background:var(--inp);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex-wrap:wrap">
+      <div style="min-width:180px"><span style="font-size:15px">${x.icon}</span> <strong style="font-size:13px">${x.label}</strong><div style="font-size:10px;color:var(--muted)">${x.sub}</div></div>
+      <div style="flex:1 1 300px">
+        <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px">
+          <span>🌡️ <strong>${fmtCO2u(co2)}</strong></span>
+          <span>⚡ <strong>${fmtEu(kwh)}</strong></span>
+          <span>💧 <strong>${fmtWu(wat)}</strong></span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">≈ 🚗 ${eqCar(co2)} · 📱 ${eqPhone(kwh)} · 🥛 ${eqGlass(wat)}</div>
+      </div>
+    </div>`;}).join('')
+    +`<div style="font-size:11px;color:var(--muted)">Total annuel divisé par le volume d'usage (${fmt(nU)} utilisateurs × ${fmt(nC)} conversations × ${fmt(nM)} messages), build inclus. Équivalences : voiture thermique ≈ 220 g CO₂e/km · charge de smartphone ≈ 12 Wh · verre d'eau = 25 cL.</div>`;
+}
+
+// Axe du seuil de bascule : 'users' (nb d'utilisateurs) ou 'conv' (conversations / utilisateur / an)
+let thresholdAxis='users';
+let lastThresholdR=null;
+const THR_AXIS_CFG={
+  users:{field:'n_users',
+    get unitLong(){return usageType==='batch'?'requêtes traitées / an':'utilisateurs';},
+    get axisLabel(){return usageType==='batch'?'Nombre de requêtes traitées / an →':"Nombre d'utilisateurs →";},
+    here:u=>usageType==='batch'?`${fmt(u)} requêtes/an — vous êtes ici`:`${fmt(u)} utilisateurs — vous êtes ici`},
+  conv:{field:'n_conv',unitLong:'conversations / utilisateur / an',axisLabel:'Conversations par utilisateur et par an →',here:u=>`${fmt(u)} conversations/an — vous êtes ici`},
+};
+function updateThresholdAxisAvailability(){
+  const isBatch=usageType==='batch';
+  document.querySelectorAll('.thr-axis-btn[data-axis="conv"]').forEach(b=>b.style.display=isBatch?'none':'');
+  if(isBatch&&thresholdAxis==='conv')setThresholdAxis('users');
+}
+function setThresholdAxis(a){
+  thresholdAxis=a;
+  document.querySelectorAll('.thr-axis-btn').forEach(b=>{
+    const on=b.dataset.axis===a;
+    b.classList.toggle('on',on);
+    b.setAttribute('aria-pressed',on);
+  });
+  if(lastThresholdR)renderThreshold(lastThresholdR);
+  if(typeof lastCmpResults!=='undefined'&&lastCmpResults)renderCmpThreshold(lastCmpResults);
+}
+function thrLinearModel(raw){
+  // Empreinte = part fixe + pente × valeur de l'axe (linéaire dans les deux axes)
+  const cfg=THR_AXIS_CFG[thresholdAxis];
+  const cur=Math.max(raw[cfg.field],1);
+  const dec0=Math.exp((Math.log(Math.max(raw.dec_min,1e-12))+Math.log(Math.max(raw.dec_max,1e-12)))/2);
+  const med=v=>{
+    const m={...raw,[cfg.field]:v};
+    const t=computeTokens(m);
+    const mm={...m,tok_req:t.tok_req,tok_resp:t.tok_resp,hasBuild:m.rag||m.ft};
+    const mat=mm.hasBuild?Math.exp((Math.log(MAT_MIN)+Math.log(MAT_MAX))/2):0;
+    return computeOnce(mm,dec0,mat).co2_tot;
+  };
+  const e0=med(0),eC=med(cur);
+  return{cur,e0,a:(eC-e0)/cur,eC};
+}
+function renderThreshold(r){
+  const host=document.getElementById('uscale'),thr=document.getElementById('uscale_thr'),
+        note=document.getElementById('threshold_note'),panel=document.getElementById('panel-threshold'),
+        axisEl=document.getElementById('uscale_axis');
+  if(!host||!r.rawInp)return;
+  lastThresholdR=r;
+  const cfg=THR_AXIS_CFG[thresholdAxis];
+  const{cur,e0,a,eC}=thrLinearModel(r.rawInp);
+  const THRESH=[1,5,25,100,500,1000];
+  if(a<=0){if(panel)panel.style.display='none';return;}
+  if(axisEl)axisEl.textContent=cfg.axisLabel;
+  // Fenêtre : 2 décades de part et d'autre de la valeur actuelle
+  const uLo=Math.max(1,cur/100),uHi=cur*100;
+  const toPct=u=>Math.max(0,Math.min(100,(Math.log10(u)-Math.log10(uLo))/(Math.log10(uHi)-Math.log10(uLo))*100));
+  const clsAt=u=>getScore(e0+a*u);
+  const bounds=THRESH.map(t=>(t-e0)/a).filter(u=>u>uLo&&u<uHi);
+  const edges=[uLo,...bounds,uHi];
+  const curCls=clsAt(cur);
+  host.innerHTML=edges.slice(0,-1).map((lo,i)=>{
+    const hi=edges[i+1];
+    const cls=clsAt(Math.sqrt(lo*hi));
+    const l=toPct(lo),w=Math.max(toPct(hi)-l,0.5);
+    return`<div class="us-seg score-${cls}${cls===curCls?' active':''}" style="left:${l}%;width:${w}%" title="Classe ${cls} de ${fmt(lo)} à ${fmt(hi)} ${cfg.unitLong}">${w>5?cls:''}</div>`;
+  }).join('')
+  +`<div class="us-marker" style="left:${Math.max(3,Math.min(97,toPct(cur)))}%"><div class="usm-val">${cfg.here(cur)}</div><div class="usm-tri"></div></div>`;
+  thr.innerHTML=bounds.map(u=>`<span style="left:${toPct(u)}%">${fmt(u)}</span>`).join('');
+  const nextT=THRESH.find(t=>t>eC);
+  let msg=`Aujourd'hui : <strong>${fmt(cur)}</strong> ${cfg.unitLong} → classe <strong>${curCls}</strong>.`;
+  if(nextT){
+    const uT=(nextT-e0)/a;
+    msg+=` Au rythme d'usage actuel, le cas d'usage passe en classe <strong>${getScore(nextT*1.001)}</strong> au-delà d'environ <strong>${fmt(uT)}</strong> ${cfg.unitLong}`;
+    const prevT=[...THRESH].reverse().find(t=>t<eC&&(t-e0)/a>=1);
+    if(prevT)msg+=`, et redescendrait en classe <strong>${getScore(prevT*0.999)}</strong> sous <strong>${fmt((prevT-e0)/a)}</strong> ${cfg.unitLong}`;
+    msg+='.';
+  }else{
+    msg+=` Le cas d'usage est déjà dans la classe la plus élevée.`;
+  }
+  note.innerHTML=msg;
+}
+let cmpThrMsgs=[],cmpThrGenericNote='';
+function cmpThrHover(i){
+  const note=document.getElementById('cmp_threshold_note');if(!note)return;
+  note.innerHTML=(i>=0&&cmpThrMsgs[i])?cmpThrMsgs[i]:cmpThrGenericNote;
+}
+function renderCmpThreshold(results){
+  const body=document.getElementById('cmp_threshold_body'),
+        note=document.getElementById('cmp_threshold_note'),
+        panel=document.getElementById('panel-cmp-threshold'),
+        axisEl=document.getElementById('cmp_uscale_axis');
+  if(!body)return;
+  const cfg=THR_AXIS_CFG[thresholdAxis];
+  const THRESH=[1,5,25,100,500,1000];
+  const rows=results.map(r=>{
+    if(!r.rawInp)return null;
+    const m=thrLinearModel(r.rawInp);
+    return m.a>0?{name:r.scenarioName,color:r.scenarioColor,...m}:null;
+  }).filter(Boolean);
+  if(!rows.length){if(panel)panel.style.display='none';return;}
+  if(axisEl)axisEl.textContent=cfg.axisLabel;
+  // Axe commun à tous les scénarios (2 décades autour des valeurs présentes)
+  const uLo=Math.max(1,Math.min(...rows.map(x=>x.cur))/100);
+  const uHi=Math.max(...rows.map(x=>x.cur))*100;
+  const toPct=u=>Math.max(0,Math.min(100,(Math.log10(u)-Math.log10(uLo))/(Math.log10(uHi)-Math.log10(uLo))*100));
+  cmpThrMsgs=[];
+  body.innerHTML=rows.map((x,idx)=>{
+    const clsAt=u=>getScore(x.e0+x.a*u);
+    const bounds=THRESH.map(t=>(t-x.e0)/x.a).filter(u=>u>uLo&&u<uHi);
+    const edges=[uLo,...bounds,uHi];
+    const curCls=clsAt(x.cur);
+    const segs=edges.slice(0,-1).map((lo,i)=>{
+      const hi=edges[i+1],cls=clsAt(Math.sqrt(lo*hi));
+      const l=toPct(lo),w=Math.max(toPct(hi)-l,0.4);
+      return`<div class="us-seg score-${cls}${cls===curCls?' active':''}" style="left:${l}%;width:${w}%" title="${x.name} : classe ${cls} de ${fmt(lo)} à ${fmt(hi)} ${cfg.unitLong}">${w>4?cls:''}</div>`;
+    }).join('');
+    // Seuils chiffrés (révélés au survol de la ligne)
+    const boundLbls=bounds.map(u=>`<span style="left:${toPct(u)}%">${fmt(u)}</span>`).join('');
+    // Phrase de lecture propre au scénario (affichée au survol)
+    const nextT=THRESH.find(t=>t>x.eC);
+    let msg=`<strong style="color:${x.color}">${x.name}</strong> — aujourd'hui <strong>${fmt(x.cur)}</strong> ${cfg.unitLong}, classe <strong>${curCls}</strong>.`;
+    if(nextT){
+      msg+=` Passe en classe <strong>${getScore(nextT*1.001)}</strong> au-delà d'environ <strong>${fmt((nextT-x.e0)/x.a)}</strong> ${cfg.unitLong}`;
+      const prevT=[...THRESH].reverse().find(t=>t<x.eC&&(t-x.e0)/x.a>=1);
+      if(prevT)msg+=`, redescend en <strong>${getScore(prevT*0.999)}</strong> sous <strong>${fmt((prevT-x.e0)/x.a)}</strong>`;
+      msg+='.';
+    }else{
+      msg+=` Déjà dans la classe la plus élevée.`;
+    }
+    cmpThrMsgs.push(msg);
+    return`<div class="cmp-thr-row" onmouseenter="cmpThrHover(${idx})" onmouseleave="cmpThrHover(-1)">
+      <div class="cmp-thr-name" style="color:${x.color}" title="${x.name}">${x.name}</div>
+      <div class="uscale-sm">${segs}<div class="usm-mini" style="left:${Math.max(1,Math.min(99,toPct(x.cur)))}%" title="${fmt(x.cur)} ${cfg.unitLong} aujourd'hui"></div><div class="us-bounds">${boundLbls}</div></div>
+    </div>`;
+  }).join('')
+  +(()=>{
+    let ticks='';
+    for(let p=Math.ceil(Math.log10(uLo));p<=Math.floor(Math.log10(uHi));p++){
+      const u=Math.pow(10,p);
+      ticks+=`<span style="left:${toPct(u)}%">${u>=1000?fmt(u):u}</span>`;
+    }
+    return`<div class="cmp-thr-ticks">${ticks}</div>`;
+  })();
+  cmpThrGenericNote=`Survolez un scénario pour voir ses seuils chiffrés et sa lecture détaillée. ▼ = ${cfg.unitLong} aujourd'hui. Zones colorées = classe selon le volume, à réglages constants.`;
+  note.innerHTML=cmpThrGenericNote;
+}
+function renderCmpRunDetail(results){
+  const runT=document.getElementById('cmp_run_table');if(!runT)return;
+  runT.innerHTML=`<thead><tr><th>Scénario</th><th>⚡ Électricité</th><th>🌡️ Carbone</th><th>💧 Eau</th><th>Tokens entrants (contexte)</th><th>Tokens sortants (génération)</th></tr></thead><tbody>`
+    +results.map(r=>`<tr>
+      <td><span class="ct-dot" style="background:${r.scenarioColor}"></span><strong>${r.scenarioName}</strong></td>
+      <td>${fmt(r.kwh_run_p50)} kWh</td>
+      <td>${fmtCO2u(r.co2_run_p50)}</td>
+      <td>${fmt(r.wat_run_p50)} L</td>
+      <td>${fmt(r.tok_req)}</td>
+      <td>${fmt(r.tok_resp)}</td>
+    </tr>`).join('')+'</tbody>';
+  const anyBuild=results.some(r=>r.hasBuild);
+  const blk=document.getElementById('cmp_build_block');
+  if(blk)blk.style.display=anyBuild?'':'none';
+  if(anyBuild){
+    const bT=document.getElementById('cmp_build_table');
+    bT.innerHTML=`<thead><tr><th>Scénario</th><th>⚡ Électricité</th><th>🌡️ Carbone</th><th>💧 Eau</th></tr></thead><tbody>`
+      +results.map(r=>`<tr>
+        <td><span class="ct-dot" style="background:${r.scenarioColor}"></span><strong>${r.scenarioName}</strong></td>
+        ${r.hasBuild?`<td>${fmt(r.kwh_bld_p50)} kWh</td><td>${fmtCO2u(r.co2_bld_p50)}</td><td>${fmt(r.wat_bld_p50)} L</td>`:`<td>—</td><td>—</td><td>—</td>`}
+      </tr>`).join('')+'</tbody>';
+  }
+}
+
+function renderCmpTable(results){
+  const table=document.getElementById('cmp_table');if(!table)return;
+  const best=Math.min(...results.map(r=>r.co2.p50));
+  table.innerHTML=`<thead><tr>
+    <th>Scénario</th><th>Classe</th><th>Carbone / an</th><th>Électricité / an</th><th>Eau / an</th><th>CO₂e / conversation</th><th>vs plus sobre</th>
+  </tr></thead><tbody>`+results.map(r=>{
+    const conv=Math.max((r.n_users||1)*(r.n_conv||1),1);
+    const perConv=r.co2.p50/conv*1e6;
+    const isBest=r.co2.p50===best;
+    return`<tr>
+      <td><span class="ct-dot" style="background:${r.scenarioColor}"></span><strong>${r.scenarioName}</strong></td>
+      <td><strong>${getScore(r.co2.p50)}</strong></td>
+      <td><strong>${fmtCO2u(r.co2.p50)}</strong><br><span class="ct-small">${fmtCO2u(r.co2.p5)} – ${fmtCO2u(r.co2.p95)}</span></td>
+      <td>${fmt(r.kwh.p50)} kWh</td>
+      <td>${fmt(r.water.p50)} L</td>
+      <td>${fmt(perConv)} g</td>
+      <td>${isBest?'<span class="ir-best">✓ le plus sobre</span>':'+'+fmt((r.co2.p50-best)/best*100)+' %'}</td>
+    </tr>`;}).join('')+'</tbody>';
+}
+
+function copyCmpTable(btn){
+  const table=document.getElementById('cmp_table');if(!table)return;
+  const tsv=[...table.rows].map(row=>[...row.cells].map(c=>(c.innerText||c.textContent||'').replace(/\n/g,' — ').trim()).join('\t')).join('\n');
+  const done=()=>{const t=btn.textContent;btn.textContent='✓ Copié !';setTimeout(()=>btn.textContent=t,1600);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsv).then(done).catch(()=>{});}
+  else{try{const ta=document.createElement('textarea');ta.value=tsv;document.body.appendChild(ta);ta.select();if(document.execCommand)document.execCommand('copy');ta.remove();done();}catch(e){console.warn('Copie indisponible :',e);}}
+}
+
+function renderDecompChart(r){
+  const cv=document.getElementById('chart_decomp');if(!cv||!r.decomp)return;
+  const d=r.decomp;
+  const items=[
+    ['Encodage (entrées)',d.co2_enc,'#93c5fd'],
+    ['Décodage (réponses)',d.co2_dec,'#1d4ed8'],
+    ['RAG — refresh (run)',d.co2_rag_run,'#34d399'],
+    ['RAG — vectorisation (build)',d.co2_rag_bld,'#0d9488'],
+    ['Fine-tuning (build)',d.co2_ft,'#8b5cf6'],
+  ].filter(x=>x[1]>d.total*0.002);
+  if(singleCharts.decomp)singleCharts.decomp.destroy();
+  singleCharts.decomp=new Chart(cv,{
+    type:'doughnut',
+    data:{labels:items.map(x=>x[0]),datasets:[{data:items.map(x=>x[1]),backgroundColor:items.map(x=>x[2]),borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12,padding:8}},
+        tooltip:{callbacks:{label:it=>` ${fmt(it.raw)} tCO₂e (${(it.raw/d.total*100).toFixed(1)} %)`}}}}
+  });
+}
+
+function computeLevers(raw){
+  const dec0=Math.exp((Math.log(Math.max(raw.dec_min,1e-12))+Math.log(Math.max(raw.dec_max,1e-12)))/2);
+  const med=m=>{
+    const t=computeTokens(m);
+    const mm={...m,tok_req:t.tok_req,tok_resp:t.tok_resp,hasBuild:m.rag||m.ft};
+    const mat=mm.hasBuild?Math.exp((Math.log(MAT_MIN)+Math.log(MAT_MAX))/2):0;
+    return computeOnce(mm,dec0,mat).co2_tot;
+  };
+  const base=med(raw);
+  const levers=[];
+  if(raw.history)levers.push(['Sans rappel d\u2019historique',med({...raw,history:false})]);
+  levers.push(['Réponses 2× plus courtes',med({...raw,resp_sz:raw.resp_sz/2})]);
+  const fr=DATACENTER['France'];
+  if(fr&&raw.carbon>fr.carbon)levers.push(['Datacenter bas-carbone (France)',med({...raw,carbon:fr.carbon,pue:fr.PUE,wue:fr.wue,ewif:fr.ewif})]);
+  if(raw.ft)levers.push(['Sans fine-tuning',med({...raw,ft:false})]);
+  if(raw.rag)levers.push(['Sans RAG',med({...raw,rag:false})]);
+  const rows=levers.map(([lbl,v])=>({lbl,delta:v-base,pct:base>0?(v-base)/base*100:0}))
+    .sort((a,b)=>a.delta-b.delta);
+  return{base,rows};
+}
+function renderLevers(r){
+  const wrap=document.getElementById('levers_wrap'),
+        note=document.getElementById('levers_note'),panel=document.getElementById('panel-levers');
+  if(!wrap||!r.rawInp)return;
+  const{base,rows}=computeLevers(r.rawInp);
+  if(!rows.length){if(panel)panel.style.display='none';return;}
+  const maxAbs=Math.max(...rows.map(x=>Math.abs(x.pct)),1);
+  wrap.innerHTML=rows.map(x=>{
+    const dir=x.pct<0?'down':'up';
+    const w=Math.min(100,Math.abs(x.pct)/maxAbs*100);
+    return`<div class="lever-row">
+      <div class="lever-label">🔧 ${x.lbl}</div>
+      <div class="lever-track"><div class="lever-mid"></div><div class="lever-bar ${dir}" style="width:${w/2}%"></div></div>
+      <div class="lever-val ${dir}"><strong>${x.pct<0?'−':'+'}${Math.abs(x.pct).toFixed(0)} %</strong><br><span style="color:var(--muted)">${x.delta<0?'−':'+'}${fmtCO2u(Math.abs(x.delta))}/an</span></div>
+    </div>`;
+  }).join('');
+  note.textContent=`Base : ${fmtCO2u(base)}/an (estimation centrale). Chaque ligne = un seul paramètre modifié, le reste inchangé. Vert = gain, rouge = surcoût.`;
+}
+
+
+// ═══════════════════════════════════════════════════
+// MODE COMPARAISON — UI
+// ═══════════════════════════════════════════════════
+function setCompareMode(val,el){
+  showTab('calc',document.querySelector('.tab-btn'));
+  document.querySelectorAll('.mode-pill').forEach(p=>p.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('empty-msg').style.display='';
+  document.getElementById('results-block').style.display='none';
+  document.getElementById('cmp-results-block').style.display='none';
+  if(val==='none'){
+    compareMode=false;
+    document.getElementById('axis-section').style.display='none';
+    document.getElementById('scenario-strip').style.display='none';
+    const btn=document.getElementById('calc-btn');
+    btn.textContent='⚡ Estimer l\'empreinte';btn.className='btn-calc';
+    showAllSections();
+  }else{
+    compareMode=true;
+    numScenarios=Math.min(MAX_SCENARIOS,Math.max(2,numScenarios||2));
+    document.getElementById('axis-section').style.display='';
+    document.getElementById('scenario-strip').style.display='';
+    const btn=document.getElementById('calc-btn');
+    btn.textContent='⚡ Comparer les scénarios';btn.className='btn-calc cmp';
+    updateCompareAxisUI();
+  }
+}
+function selectAxis(val,pill){
+  compareAxis=val;
+  document.querySelectorAll('.axis-pill').forEach(p=>p.classList.remove('active'));
+  if(pill)pill.classList.add('active');
+  updateCompareAxisUI();
+}
+function showAllSections(){
+  ['llm-section','dc-section','rag-section','ft-section'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  const fn=document.getElementById('field-n-users');if(fn)fn.style.display='';
+  ['users-axis-note','llm-axis-note','dc-axis-note','arch-axis-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+}
+function updateCompareAxisUI(){
+  showAllSections();
+  const noteMap={model:'llm-axis-note',users:'users-axis-note',arch:'arch-axis-note',dc:'dc-axis-note'};
+  const noteEl=document.getElementById(noteMap[compareAxis]);if(noteEl)noteEl.style.display='';
+  if(compareAxis==='arch'){
+    document.getElementById('rag-section').style.display='none';
+    document.getElementById('ft-section').style.display='none';
+  }else if(compareAxis==='model'){
+    document.getElementById('llm-section').style.display='none';
+  }else if(compareAxis==='users'){
+    document.getElementById('field-n-users').style.display='none';
+  }else if(compareAxis==='dc'){
+    document.getElementById('dc-section').style.display='none';
+  }
+  buildScenarioStrip();
+}
+function buildScenarioStrip(){
+  numScenarios=Math.min(MAX_SCENARIOS,Math.max(2,numScenarios));
+  const strip=document.getElementById('scenario-strip-inner');
+  // 1. Sauvegarder les saisies existantes avant régénération du DOM
+  const saved={};
+  strip.querySelectorAll('input,select').forEach(el=>{
+    if(el.id)saved[el.id]=el.type==='checkbox'?el.checked:el.value;
+  });
+  const scs=SC_LETTERS.slice(0,numScenarios);
+  strip.innerHTML=scs.map(sc=>buildScenarioCard(sc)).join('')
+    +(numScenarios<MAX_SCENARIOS?`<button class="add-sc-btn" onclick="addScenario()">+ Ajouter un scénario (${numScenarios}/${MAX_SCENARIOS})</button>`:'');
+  // 2. Restaurer d'abord les fournisseurs (ils conditionnent la liste des modèles)
+  scs.forEach(sc=>{
+    const el=document.getElementById('sc_provider_'+sc);
+    if(el&&saved['sc_provider_'+sc]!==undefined)el.value=saved['sc_provider_'+sc];
+  });
+  scs.forEach(sc=>{
+    if(compareAxis==='model')filterModelsScenario(sc);
+    if(compareAxis==='dc')updateDCScenario(sc);
+  });
+  // 3. Restaurer toutes les autres saisies (noms, modèles, valeurs, cases)
+  Object.entries(saved).forEach(([id,v])=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(el.type==='checkbox')el.checked=v;else el.value=v;
+  });
+  // 4. Ré-appliquer les dépendances visuelles (infos modèle/DC, sections repliées)
+  scs.forEach(sc=>{
+    if(compareAxis==='model')updateModelInfoScenario(sc);
+    if(compareAxis==='dc')updateDCScenario(sc);
+    if(compareAxis==='arch'){
+      [['sc_bool_rag_'+sc,'sc_rag_'+sc],['sc_bool_ft_'+sc,'sc_ft_'+sc]].forEach(([cid,sid])=>{
+        const cb=document.getElementById(cid),box=document.getElementById(sid);
+        if(cb&&box)box.classList.toggle('open',cb.checked);
+      });
+    }
+    applyAutoName(sc);
+  });
+}
+function buildScenarioCard(sc){
+  const color=SC_COLORS[sc];
+  const idx=SC_LETTERS.indexOf(sc);
+  const isLast=idx===numScenarios-1;
+  return`<div class="sc-col" style="--scol:${color}">
+    <div class="sc-header">
+      <span>Scénario ${sc}</span>
+      <input type="text" id="sc_name_${sc}" value="Scénario ${sc}" placeholder="Nom">
+      ${(isLast&&numScenarios>2)?`<button class="rm-sc-btn" onclick="removeScenario()" title="Retirer ce scénario">✕</button>`:''}
+    </div>
+    <div class="sc-fields">${getAxisFieldsHtml(sc)}</div>
+  </div>`;
+}
+function getAxisFieldsHtml(sc){
+  const defProv={A:'Anthropic',B:'OpenAI',C:'Google',D:'Meta',E:'Mistral'};
+  const defUsers={A:'100',B:'500',C:'1000',D:'5000',E:'10000'};
+  const defDC={A:'France',B:'Etats Unis',C:'Chine',D:'Allemagne',E:'Suède'};
+  if(compareAxis==='model'){
+    const prov=defProv[sc]||'Anthropic';
+    const provOpts=[...new Set(MODELS.map(m=>m[0]))].map(p=>`<option${p===prov?' selected':''}>${p}</option>`).join('');
+    return`<div class="field"><label>Fournisseur</label><select id="sc_provider_${sc}" onchange="filterModelsScenario('${sc}')">${provOpts}</select></div>
+<div class="field"><label>Modèle</label><select id="sc_model_${sc}" onchange="updateModelInfoScenario('${sc}')"></select></div>
+<div class="model-info" id="sc_model_info_${sc}" style="display:none"></div>`;
+  }
+  if(compareAxis==='users'){
+    const lbl=usageType==='batch'?'Volume de requêtes traitées / an':"Nombre d'utilisateurs";
+    return`<div class="field"><label>${lbl}</label><input type="number" id="sc_n_users_${sc}" value="${defUsers[sc]||'100'}" min="1" oninput="applyAutoName('${sc}')"></div>`;
+  }
+  if(compareAxis==='arch'){
+    return`<div class="toggle-row"><label class="toggle"><input type="checkbox" id="sc_bool_rag_${sc}" onchange="toggleSection('sc_bool_rag_${sc}','sc_rag_${sc}');applyAutoName('${sc}')"><span class="slider"></span></label><span style="font-size:13px;font-weight:500">RAG</span></div>
+<div class="collapsible" id="sc_rag_${sc}"><div class="field-group" style="margin-top:8px">
+  <div class="field"><label>Documents</label><input type="number" id="sc_n_docs_${sc}" value="1000"></div>
+  <div class="field"><label>Pages/doc</label><input type="number" id="sc_n_pages_${sc}" value="10"></div>
+  <div class="field"><label>Refreshs/an</label><input type="number" id="sc_n_refresh_${sc}" value="12"></div>
+</div></div>
+<div class="toggle-row" style="margin-top:8px"><label class="toggle"><input type="checkbox" id="sc_bool_ft_${sc}" onchange="toggleSection('sc_bool_ft_${sc}','sc_ft_${sc}');applyAutoName('${sc}')"><span class="slider"></span></label><span style="font-size:13px;font-weight:500">Fine-tuning</span></div>
+<div class="collapsible" id="sc_ft_${sc}"><div class="field-group" style="margin-top:8px">
+  <div class="field"><label>Exemples</label><select id="sc_ft_ex_${sc}"><option value="1000">1 000</option><option value="10000" selected>10 000</option><option value="100000">100 000</option></select></div>
+  <div class="field"><label>Epochs</label><select id="sc_ft_ep_${sc}"><option value="1">1</option><option value="3" selected>3</option><option value="10">10</option></select></div>
+</div></div>`;
+  }
+  if(compareAxis==='dc'){
+    const defD=defDC[sc]||'France';
+    const dcOpts=[...Object.keys(DATACENTER),'autre'].map(k=>`<option${k===defD?' selected':''}>${k}</option>`).join('');
+    return`<div class="field"><label>Localisation</label><select id="sc_dc_${sc}" onchange="updateDCScenario('${sc}')">${dcOpts}</select></div>
+<div class="dc-grid" id="sc_dc_info_${sc}">
+  <div class="dc-item"><span class="dc-label">PUE</span><span class="dc-val" id="sc_dc_pue_${sc}">—</span><span class="dc-unit">ratio</span></div>
+  <div class="dc-item"><span class="dc-label">CO₂</span><span class="dc-val" id="sc_dc_carbon_${sc}">—</span><span class="dc-unit">g/kWh</span></div>
+  <div class="dc-item"><span class="dc-label">WUE</span><span class="dc-val" id="sc_dc_wue_${sc}">—</span><span class="dc-unit">L/kWh</span></div>
+  <div class="dc-item"><span class="dc-label">EWIF</span><span class="dc-val" id="sc_dc_ewif_${sc}">—</span><span class="dc-unit">L/kWh</span></div>
+</div>`;
+  }
+  return'';
+}
+// ─── Noms de scénarios proposés automatiquement selon les choix ───
+const scAutoNames={};
+function autoNameFor(sc){
+  if(compareAxis==='model'){
+    const sel=document.getElementById('sc_model_'+sc);
+    return sel&&sel.selectedIndex>=0?sel.options[sel.selectedIndex].text:null;
+  }
+  if(compareAxis==='users'){
+    const v=parseFloat(document.getElementById('sc_n_users_'+sc)?.value);
+    return v>0?(usageType==='batch'?fmt(v)+' requêtes/an':fmt(v)+' utilisateurs'):null;
+  }
+  if(compareAxis==='dc'){
+    const v=document.getElementById('sc_dc_'+sc)?.value;
+    return v&&v!=='autre'?'Datacenter '+v:null;
+  }
+  if(compareAxis==='arch'){
+    const rag=document.getElementById('sc_bool_rag_'+sc)?.checked;
+    const ft=document.getElementById('sc_bool_ft_'+sc)?.checked;
+    return rag&&ft?'RAG + fine-tuning':rag?'RAG':ft?'Fine-tuning':'Sans RAG ni fine-tuning';
+  }
+  return null;
+}
+function applyAutoName(sc){
+  const inp=document.getElementById('sc_name_'+sc);if(!inp)return;
+  const auto=autoNameFor(sc);if(!auto)return;
+  // Nom considéré personnalisé s'il diffère du dernier nom proposé ET du nom par défaut
+  const isCustom=inp.value!==''&&inp.value!==(scAutoNames[sc]||'')&&inp.value!=='Scénario '+sc;
+  if(!isCustom)inp.value=auto;
+  scAutoNames[sc]=auto;
+}
+function addScenario(){if(numScenarios<MAX_SCENARIOS){numScenarios++;buildScenarioStrip();}}
+function removeScenario(){if(numScenarios>2){numScenarios--;buildScenarioStrip();}}
+function filterModelsScenario(sc){
+  const prov=document.getElementById('sc_provider_'+sc)?.value;
+  const sel=document.getElementById('sc_model_'+sc);if(!sel)return;
+  sel.innerHTML='';
+  MODELS.forEach(([p,name,cls],i)=>{if(p!==prov)return;const o=document.createElement('option');o.value=i;o.textContent=name;sel.appendChild(o);});
+  updateModelInfoScenario(sc);
+}
+function updateModelInfoScenario(sc){
+  const sel=document.getElementById('sc_model_'+sc);if(!sel||sel.value==='')return;
+  const[,name,cls,dmin,dmax,params]=MODELS[+sel.value];
+  const el=document.getElementById('sc_model_info_'+sc);if(!el)return;
+  el.innerHTML=`<strong>${name}</strong>${params?` · ${params}B`:''}<br>Fourchette : <strong>${dmin.toFixed(4)}</strong> – <strong>${dmax.toFixed(4)}</strong> Wh/100k`;
+  el.style.display='';
+  applyAutoName(sc);
+}
+function updateDCScenario(sc){
+  const val=document.getElementById('sc_dc_'+sc)?.value;if(!val||val==='autre')return;
+  const dc=DATACENTER[val];if(!dc)return;
+  const S=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  S('sc_dc_pue_'+sc,dc.PUE);S('sc_dc_carbon_'+sc,dc.carbon);S('sc_dc_wue_'+sc,dc.wue);S('sc_dc_ewif_'+sc,dc.ewif);
+  applyAutoName(sc);
+}
+
+// ═══════════════════════════════════════════════════
+// CALCUL COMPARAISON
+// ═══════════════════════════════════════════════════
+function buildScenarioInput(sc){
+  const gv=id=>{const el=document.getElementById(id);return el?parseFloat(el.value)||0:0;};
+  const gc=id=>{const el=document.getElementById(id);return el?el.checked:false;};
+  const getCatM=(s,c)=>{const el=document.getElementById(s);if(!el)return 0;const v=el.value;return v==='custom'?(gv(c)):parseFloat(v)||0;};
+  let n_conv=gv('n_yearly_conv'),n_msg=gv('n_messages');
+  const req_sz=getCatM('request_size_cat','request_size_val');
+  const resp_sz=getCatM('response_size_cat','response_size_val');
+  const sys_sz=getCatM('systemprompt_cat','systemprompt_val');
+  let history=gc('bool_history');
+  let n_users=compareAxis==='users'?gv('sc_n_users_'+sc):gv('n_users');
+  if(usageType==='batch'){
+    if(compareAxis!=='users'){
+      const period=document.getElementById('n_users_period')?.value;
+      if(period==='jour')n_users*=365;
+    }
+    n_conv=1;n_msg=1;history=false;
+  }
+  let dec_min,dec_max;
+  if(compareAxis==='model'){
+    const midx=+document.getElementById('sc_model_'+sc)?.value;
+    if(midx>=0&&MODELS[midx]){dec_min=MODELS[midx][3];dec_max=MODELS[midx][4];}else{dec_min=0.1;dec_max=1.0;}
+  }else{const idx=+document.getElementById('model_select').value;[,,,dec_min,dec_max]=MODELS[idx];}
+  let pue,carbon,wue,ewif;
+  if(compareAxis==='dc'){
+    const val=document.getElementById('sc_dc_'+sc)?.value;
+    if(val&&val!=='autre'&&DATACENTER[val]){const dcS=DATACENTER[val];pue=dcS.PUE;carbon=dcS.carbon;wue=dcS.wue;ewif=dcS.ewif;}
+    else{pue=1.5;carbon=400;wue=1.5;ewif=0.5;}
+  }else{const dc=getDC();pue=dc.PUE;carbon=dc.carbon;wue=dc.wue;ewif=dc.ewif;}
+  let rag,ft,n_docs,n_pages,n_refresh,ft_ex,ft_ep;
+  if(compareAxis==='arch'){
+    rag=gc('sc_bool_rag_'+sc);ft=gc('sc_bool_ft_'+sc);
+    n_docs=gv('sc_n_docs_'+sc)||1000;n_pages=gv('sc_n_pages_'+sc)||10;n_refresh=gv('sc_n_refresh_'+sc)||12;
+    const exEl=document.getElementById('sc_ft_ex_'+sc);const epEl=document.getElementById('sc_ft_ep_'+sc);
+    ft_ex=exEl?parseFloat(exEl.value)||10000:10000;ft_ep=epEl?parseFloat(epEl.value)||3:3;
+  }else{
+    rag=gc('bool_rag');ft=gc('bool_ft');
+    n_docs=gv('n_docs')||1000;n_pages=gv('n_pages')||10;n_refresh=gv('n_docs_refresh')||12;
+    ft_ex=getCatM('ft_examples_cat','ft_examples_val');ft_ep=getCatM('ft_epochs_cat','ft_epochs_val');
+  }
+  const hasBuild=rag||ft;
+  const toks=computeTokens({n_users,n_conv,n_msg,req_sz,resp_sz,sys_sz,history,rag});
+  return{dec_min,dec_max,pue,carbon,wue,ewif,rag,ft,hasBuild,n_users,n_conv,n_msg,req_sz,resp_sz,sys_sz,history,
+    n_docs,n_pages,n_refresh,ft_ex,ft_ep,tok_req:toks.tok_req,tok_resp:toks.tok_resp,
+    scenarioName:document.getElementById('sc_name_'+sc)?.value||('Scénario '+sc),
+    scenarioColor:SC_COLORS[sc],
+    modelName:(()=>{
+      if(compareAxis==='model'){const s=document.getElementById('sc_model_'+sc);return s&&s.selectedIndex>=0?MODELS[+s.value][0]+' '+MODELS[+s.value][1]:'—';}
+      const i2=+document.getElementById('model_select').value;return MODELS[i2][0]+' '+MODELS[i2][1];
+    })(),
+    dcName:(()=>{
+      if(compareAxis==='dc'){const v=document.getElementById('sc_dc_'+sc)?.value;return v&&v!=='autre'?v:'Personnalisé';}
+      const v=document.getElementById('dc_country').value;return v==='autre'?'Personnalisé':v;
+    })()};
+}
+function setNorm(mode,btn){
+  normMode=mode;
+  document.querySelectorAll('.norm-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(lastCmpResults){renderCmpCharts(lastCmpResults);renderDecompStack(lastCmpResults);renderWaterfall(lastCmpResults);}
+}
+function calculateComparison(){
+  const scs=SC_LETTERS.slice(0,numScenarios);
+  const results=scs.map(sc=>{
+    const inp=buildScenarioInput(sc);
+    const r=runMonteCarlo(inp);
+    r.scenarioName=inp.scenarioName;r.scenarioColor=inp.scenarioColor;
+    r.decomp=computeDecomposition(inp);
+    r.rawInp=inp;
+    r.n_users=inp.n_users||1;r.n_conv=inp.n_conv||1;
+    return r;
+  });
+  lastResults={type:'compare',data:results};
+  displayComparison(results);
+}
+
+// ═══════════════════════════════════════════════════
+// AFFICHAGE — Standard
+// ═══════════════════════════════════════════════════
+function fmt(n){
+  if(!n||n===0)return'0';
+  if(Math.abs(n)>=1e5)return Math.round(n).toLocaleString('fr-FR');
+  if(Math.abs(n)>=100)return Math.round(n).toLocaleString('fr-FR');
+  if(Math.abs(n)>=10)return n.toFixed(1);
+  if(Math.abs(n)>=1)return n.toFixed(2);
+  if(Math.abs(n)>=.01)return n.toFixed(3);
+  return n.toExponential(2);
+}
+function fmtFull(n){if(!n)return'0';if(Math.abs(n)>=100)return Math.round(n).toLocaleString('fr-FR');if(Math.abs(n)>=10)return n.toFixed(1);if(Math.abs(n)>=1)return n.toFixed(2);return n.toFixed(3);}
+const S=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+function display(r){
+  document.getElementById('empty-msg').style.display='none';
+  document.getElementById('results-block').style.display='flex';
+  document.getElementById('cmp-results-block').style.display='none';
+  // EcoScore en langage courant : classe centrale + fourchette probable
+  const cls=getScore(r.co2.p50);
+  const sm=document.getElementById('score_main');
+  sm.textContent=cls;sm.className='score-letter score-'+cls;
+  document.getElementById('score_range_txt').innerHTML=
+    `Empreinte carbone estimée entre <strong>${fmt(r.co2.p5)}</strong> et <strong>${fmt(r.co2.p95)}</strong> tonnes de CO₂e par an.`;
+  const c5=getScore(r.co2.p5),c95=getScore(r.co2.p95);
+  document.getElementById('score_note_txt').textContent=
+    c5===c95?`Ce cas d'usage se situe en classe ${cls} sur l'échelle A → G.`
+            :`Selon les hypothèses retenues, la note peut aller de ${c5} à ${c95} — l'estimation centrale est ${cls}.`;
+  S('m_co2_p50',fmt(r.co2.p50));S('m_co2_p5',fmt(r.co2.p5));S('m_co2_p95',fmt(r.co2.p95));
+  S('m_kwh_p50',fmt(r.kwh.p50));S('m_kwh_p5',fmt(r.kwh.p5));S('m_kwh_p95',fmt(r.kwh.p95));
+  S('m_water_p50',fmt(r.water.p50));S('m_water_p5',fmt(r.water.p5));S('m_water_p95',fmt(r.water.p95));
+  S('eq_co2',fmt(r.co2.p50/CONV_PARIS_NY));S('eq_kwh',fmt(r.kwh.p50/CONV_KWH_FR));S('eq_water',fmt(r.water.p50/CONV_WATER_FR));
+  S('d_kwh_run',fmt(r.kwh_run_p50));S('d_co2_run',fmt(r.co2_run_p50));S('d_water_run',fmt(r.wat_run_p50));
+  S('run_tag',r.topClasses.slice(0,2).map(x=>`${x.cls} ${Math.round(x.prob*100)}%`).join(' · '));
+  S('t_total',fmt(r.tok_req+r.tok_resp));S('t_req',fmt(r.tok_req));S('t_resp',fmt(r.tok_resp));
+  document.getElementById('build_panel').style.display=r.hasBuild?'':'none';
+  lastHasBuild=!!r.hasBuild;
+  if(r.hasBuild){S('d_kwh_bld',fmt(r.kwh_bld_p50));S('d_co2_bld',fmt(r.co2_bld_p50));S('d_water_bld',fmt(r.wat_bld_p50));}
+  drawBoxPlot('chart_co2',r.co2.p5,r.co2.p25,r.co2.p50,r.co2.p75,r.co2.p95,'tCO₂e','#00834a','#7fe0b0');
+  drawBoxPlot('chart_kwh',r.kwh.p5,r.kwh.p25,r.kwh.p50,r.kwh.p75,r.kwh.p95,'kWh','#1d4ed8','#93c5fd');
+  drawBoxPlot('chart_water',r.water.p5,r.water.p25,r.water.p50,r.water.p75,r.water.p95,'L','#0369a1','#7dd3fc');
+  if(r.decomp)renderDecomposition(r.decomp);
+  renderEcoScale(r);
+  renderPerUser(r);
+  renderDecompChart(r);
+  renderLevers(r);
+  renderThreshold(r);
+  applyVizPrefs();
+}
+
+function renderDecomposition(d){
+  const el=document.getElementById('decomp_insight');
+  if(!el)return;
+  const items=[
+    {label:'Inférence — tokens sortants',val:d.co2_dec,color:'#00834a'},
+    {label:'Inférence — tokens entrants',val:d.co2_enc,color:'#54d896'},
+    {label:'RAG — runtime',val:d.co2_rag_run,color:'#1d4ed8'},
+    {label:'RAG — construction',val:d.co2_rag_bld,color:'#93c5fd'},
+    {label:'Fine-tuning',val:d.co2_ft,color:'#7c3aed'},
+  ].filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+  if(!items.length){el.innerHTML='<span style="color:var(--muted);font-size:13px">—</span>';return;}
+  const top=items[0];
+  const adviceMap={
+    'Inférence — tokens sortants':'Réduire la longueur des réponses ou choisir un modèle plus efficace.',
+    'Inférence — tokens entrants':'Raccourcir le prompt système ou les messages utilisateur.',
+    'RAG — runtime':'Réduire la fréquence de refresh ou le nombre de documents indexés à chaque requête.',
+    'RAG — construction':'Limiter le corpus RAG (moins de documents, moins de pages).',
+    'Fine-tuning':'Réduire le nombre d\'exemples ou d\'epochs, ou éviter le fine-tuning si possible.',
+  };
+  const fmtCo2=v=>v>=1?v.toFixed(2)+' tCO₂e':v>=0.001?(v*1000).toFixed(2)+' kgCO₂e':(v*1e6).toFixed(1)+' gCO₂e';
+  const rows=items.map(x=>{
+    const pct=Math.round(x.val/d.total*100);
+    const w=Math.max(pct,1);
+    return`<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
+        <span style="color:var(--text)">${x.label}</span>
+        <span style="font-weight:600;color:var(--text)">${fmtCo2(x.val)}<span style="color:var(--muted);font-weight:400;margin-left:6px">${pct}%</span></span>
+      </div>
+      <div style="background:var(--card-bg);border-radius:4px;height:8px;overflow:hidden">
+        <div style="width:${w}%;height:100%;background:${x.color};border-radius:4px;transition:width .4s"></div>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div style="font-size:13px">
+    ${rows}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5">
+      💡 <strong style="color:var(--text)">Levier principal :</strong> ${adviceMap[top.label]||top.label}
+    </div>
+  </div>`;
+}
+
+function displayComparison(results){
+  document.getElementById('empty-msg').style.display='none';
+  document.getElementById('results-block').style.display='none';
+  const cb=document.getElementById('cmp-results-block');
+  cb.style.display='flex';
+  cb.classList.toggle('cmp-many',results.length>=4); // ≥4 scénarios : graphiques empilés pleine largeur
+
+  // 1 — Badges
+  const minCo2=Math.min(...results.map(r=>r.co2.p50));
+  document.getElementById('cmp-badges-container').innerHTML=results.map(r=>{
+    const top=r.topClasses[0]||{cls:'?',prob:0};
+    const isBest=r.co2.p50===minCo2&&results.length>1;
+    return`<div class="cmp-badge" style="--scol:${r.scenarioColor}">
+      <div class="cmp-badge-name">${r.scenarioName}${isBest?'<span class="cmp-winner-badge">✓ Le plus sobre</span>':''}</div>
+      <div class="cmp-score-letter score-${top.cls}">${top.cls}</div>
+      <div class="cmp-score-sub">${r.subScore||top.cls}</div>
+      <div class="cmp-score-prob">dans ${Math.round(top.prob*100)} % des cas</div>
+      <div class="cmp-co2-val">${fmt(r.co2.p50)} tCO₂e/an</div>
+      <div style="font-size:10px;color:var(--muted)">Fourchette : ${fmt(r.co2.p5)} – ${fmt(r.co2.p95)}</div>
+    </div>`;
+  }).join('');
+
+  lastCmpResults=results;
+  // Waterfall ref name
+  const refEl=document.getElementById('waterfall-ref-name');if(refEl)refEl.textContent=results[0].scenarioName;
+  // 2 — Chart.js bar charts (avec délai pour que les canvas soient visibles)
+  requestAnimationFrame(()=>{
+    renderCmpCharts(results);
+    renderDecompStack(results);
+    renderWaterfall(results);
+  });
+
+  // 3 — Distribution classes
+  renderClassDist(results);
+
+  // 4 — Comparaison relative
+  renderRelativeCmp(results);
+  renderCmpTable(results);
+  renderCmpThreshold(results);
+  renderCmpRunDetail(results);
+  applyVizPrefs();
+}
+
+// Plugin inline : lignes de référence EcoScore sur le graphique CO₂
+const ecoscore_lines_plugin={
+  id:'ecoscore_lines',
+  afterDraw(chart,args,opts){
+    if(!opts||!opts.thresholds)return;
+    const{ctx,scales:{y,x}}=chart;
+    if(!y||!x)return;
+    const colors_map={A:'#10b981',B:'#3b82f6',C:'#8b5cf6',D:'#f59e0b',E:'#f97316',F:'#ef4444'};
+    const letters=['A','B','C','D','E','F'];
+    opts.thresholds.forEach((v,i)=>{
+      const yPx=y.getPixelForValue(v);
+      if(yPx<y.top||yPx>y.bottom)return;
+      ctx.save();
+      ctx.strokeStyle=colors_map[letters[i]]+'99';
+      ctx.lineWidth=1;ctx.setLineDash([4,3]);
+      ctx.beginPath();ctx.moveTo(x.left,yPx);ctx.lineTo(x.right,yPx);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle=colors_map[letters[i]];
+      ctx.font='bold 9px Segoe UI,sans-serif';ctx.textAlign='right';
+      ctx.fillText(letters[i],x.left-2,yPx+3);
+      ctx.restore();
+    });
+  }
+};
+Chart.register(ecoscore_lines_plugin);
+
+function getNormFactor(r){
+  if(normMode==='user')return Math.max(r.n_users||1,1);
+  if(normMode==='conv')return Math.max((r.n_users||1)*(r.n_conv||1),1);
+  return 1;
+}
+function getNormLabel(){return normMode==='user'?'/user':normMode==='conv'?'/conv':'';}
+
+function renderCmpCharts(results){
+  const CO2_THRESH=[1,5,25,100,500,1000];
+  const metrics=[
+    {id:'cmp_chart_co2',key:'co2',label:'tCO₂e',isCo2:true},
+    {id:'cmp_chart_kwh',key:'kwh',label:'kWh'},
+    {id:'cmp_chart_water',key:'water',label:'L'},
+  ];
+  const normLabel=getNormLabel();
+  metrics.forEach(m=>{
+    const canvas=document.getElementById(m.id);if(!canvas)return;
+    if(cmpCharts[m.id]){cmpCharts[m.id].destroy();delete cmpCharts[m.id];}
+    const nf=results.map(r=>getNormFactor(r));
+    const series=results.map((r,i)=>({
+      name:r.scenarioName,color:r.scenarioColor,
+      p5:r[m.key].p5/nf[i],p50:r[m.key].p50/nf[i],p95:r[m.key].p95/nf[i],
+    }));
+    drawRangeBars(canvas,series,m.label+normLabel,(m.isCo2&&normMode==='total')?CO2_THRESH:null);
+  });
+}
+
+// Barres horizontales : barre pleine = estimation centrale, trait fin = fourchette probable
+function drawRangeBars(canvas,series,unit,thresholds){
+  const ctx=canvas.getContext('2d');const dpr=window.devicePixelRatio||1;
+  const par=canvas.parentElement;
+  const cw=Math.max(par?par.clientWidth:0,300);
+  const ch=Math.max(par?par.clientHeight:0,240);
+  canvas.width=cw*dpr;canvas.height=ch*dpr;canvas.style.width=cw+'px';canvas.style.height=ch+'px';
+  ctx.scale(dpr,dpr);
+  const W=cw,H=ch;ctx.clearRect(0,0,W,H);
+  const PL=12,PR=16,PT=16,PB=26,dW=W-PL-PR,dH=H-PT-PB;
+  const gMax=Math.max(...series.map(s=>s.p95));
+  let xMax;
+  if(thresholds){xMax=thresholds.find(t=>t>gMax)||thresholds[thresholds.length-1]*2;xMax=Math.max(xMax,1);}
+  else xMax=niceMax(gMax*1.12||1);
+  const toX=v=>PL+Math.min(v/xMax,1)*dW;
+  // Graduations verticales
+  ctx.font='10px Segoe UI,sans-serif';
+  for(let i=0;i<=4;i++){
+    const v=xMax*i/4,x=toX(v);
+    ctx.strokeStyle='#eef2f7';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,PT);ctx.lineTo(x,H-PB);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.textAlign='center';ctx.fillText(fmt(v),x,H-10);
+  }
+  ctx.textAlign='right';ctx.fillStyle='#64748b';ctx.fillText(unit,W-2,H-10);
+  // Seuils EcoScore verticaux (carbone, mode Total)
+  if(thresholds){
+    const thrColors=['#10b981','#3b82f6','#8b5cf6','#f59e0b','#f97316','#ef4444'];
+    const thrLetters=['A','B','C','D','E','F'];
+    thresholds.forEach((v,i)=>{
+      if(v>xMax)return;const tx=toX(v);
+      ctx.save();ctx.strokeStyle=thrColors[i]+'99';ctx.setLineDash([3,3]);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(tx,PT-2);ctx.lineTo(tx,H-PB);ctx.stroke();ctx.restore();
+      ctx.font='bold 9px Segoe UI,sans-serif';ctx.fillStyle=thrColors[i];ctx.textAlign='center';
+      ctx.fillText(thrLetters[i],tx,PT-4);
+    });
+  }
+  // Une ligne par scénario : nom au-dessus, barre pleine (centrale), trait fin (fourchette)
+  const n=series.length,rowH=dH/n,barH=Math.min(16,rowH*0.34);
+  series.forEach((s,i)=>{
+    const yTop=PT+rowH*i;
+    const nameY=yTop+Math.max(12,rowH*0.30);
+    const barY=yTop+rowH*0.48;
+    ctx.font='bold 11px Segoe UI,sans-serif';ctx.fillStyle=s.color;ctx.textAlign='left';
+    const nm=s.name.length>26?s.name.slice(0,25)+'…':s.name;
+    ctx.fillText(nm,PL,nameY);
+    // barre centrale
+    ctx.fillStyle=s.color;
+    ctx.beginPath();ctx.roundRect(PL,barY,Math.max(toX(s.p50)-PL,2),barH,4);ctx.fill();
+    // trait de fourchette
+    const cy=barY+barH/2,x5=toX(s.p5),x95=toX(s.p95);
+    ctx.strokeStyle='#16324f';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x5,cy);ctx.lineTo(x95,cy);ctx.stroke();
+    [x5,x95].forEach(x=>{ctx.beginPath();ctx.moveTo(x,cy-5);ctx.lineTo(x,cy+5);ctx.stroke();});
+    // valeur centrale
+    ctx.font='bold 11px Segoe UI,sans-serif';ctx.fillStyle='#16324f';
+    const vx=Math.min(x95+8,W-PR-4);
+    ctx.textAlign=vx>W-70?'right':'left';
+    ctx.fillText('~'+fmt(s.p50),vx,cy+4);
+  });
+  canvas.title=series.map(s=>`${s.name} : ${fmt(s.p5)} – ${fmt(s.p95)} ${unit} (centrale ~${fmt(s.p50)})`).join('\n');
+}
+function renderDecompStack(results){
+  const host=document.getElementById('cmp_decomp_container');if(!host)return;
+  // Détruire les anciens donuts
+  Object.keys(cmpCharts).filter(k=>k.startsWith('decomp')).forEach(k=>{cmpCharts[k].destroy();delete cmpCharts[k];});
+  // Mêmes postes et couleurs que la décomposition de l'estimation simple
+  const POSTES=[
+    ['co2_enc','Encodage (entrées)','#93c5fd'],
+    ['co2_dec','Décodage (réponses)','#1d4ed8'],
+    ['co2_rag_run','RAG — refresh (run)','#34d399'],
+    ['co2_rag_bld','RAG — vectorisation (build)','#0d9488'],
+    ['co2_ft','Fine-tuning (build)','#8b5cf6'],
+  ];
+  host.innerHTML=results.map((r,i)=>`
+    <div class="cmp-donut-card" style="--scol:${r.scenarioColor}">
+      <div class="cmp-donut-name" style="color:${r.scenarioColor}">${r.scenarioName}</div>
+      <div style="position:relative;height:150px"><canvas id="cmp_donut_${i}"></canvas></div>
+      <div class="cmp-donut-total"><strong>${fmt(r.decomp?r.decomp.total:0)}</strong> tCO₂e/an</div>
+    </div>`).join('');
+  // Légende commune (n'affiche que les postes présents dans au moins un scénario)
+  const legend=document.getElementById('cmp_decomp_legend');
+  if(legend)legend.innerHTML=POSTES
+    .filter(([k])=>results.some(r=>r.decomp&&r.decomp[k]>r.decomp.total*0.002))
+    .map(([,lbl,c])=>`<span class="cdl-item"><span class="cdl-dot" style="background:${c}"></span>${lbl}</span>`).join('');
+  results.forEach((r,i)=>{
+    const d=r.decomp;if(!d)return;
+    const items=POSTES.filter(([k])=>d[k]>d.total*0.002);
+    cmpCharts['decomp'+i]=new Chart(document.getElementById('cmp_donut_'+i),{
+      type:'doughnut',
+      data:{labels:items.map(x=>x[1]),datasets:[{data:items.map(([k])=>d[k]),
+        backgroundColor:items.map(x=>x[2]),borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+        plugins:{legend:{display:false},
+          tooltip:{callbacks:{label:it=>` ${it.label} : ${fmt(it.raw)} tCO₂e (${(it.raw/d.total*100).toFixed(1)} %)`}}}}
+    });
+  });
+}
+
+function renderWaterfall(results){
+  const panel=document.getElementById('cmp-waterfall-panel');
+  const host=document.getElementById('impact_ranking');
+  if(!host||results.length<2)return; // visibilité pilotée uniquement par le sélecteur de vues
+  // Classement du plus sobre au plus émetteur (carbone annuel, estimation centrale)
+  const sorted=[...results].sort((a,b)=>a.co2.p50-b.co2.p50);
+  const best=sorted[0],worst=sorted[sorted.length-1];
+  const medals=['🥇','🥈','🥉'];
+  host.innerHTML=sorted.map((r,i)=>{
+    const delta=r.co2.p50-best.co2.p50;
+    const pct=best.co2.p50>0?delta/best.co2.p50*100:0;
+    const flights=delta/1.7; // A/R Paris–New York ≈ 1,7 tCO₂e
+    const wPct=Math.max(6,r.co2.p50/worst.co2.p50*100);
+    const deltaTxt=i===0
+      ?`<span class="ir-best">✓ Le choix le plus sobre</span>`
+      :`<span class="ir-delta">+${fmtCO2u(delta)}/an vs le plus sobre (×${(r.co2.p50/best.co2.p50).toFixed(1)})${flights>=0.5?` · ✈️ ≈ ${fmt(flights)} vols Paris–New York évitables`:''}</span>`;
+    return`<div class="impact-row">
+      <div class="ir-rank">${medals[i]||(i+1)+'ᵉ'}</div>
+      <div class="ir-body">
+        <div class="ir-head"><span class="ir-name" style="color:${r.scenarioColor}">${r.scenarioName}</span>
+          <span class="ir-val"><strong>${fmtCO2u(r.co2.p50)}</strong>/an · classe ${getScore(r.co2.p50)}</span></div>
+        <div class="ir-track"><div class="ir-bar" style="width:${wPct}%;background:${r.scenarioColor}"></div></div>
+        ${deltaTxt}
+      </div>
+    </div>`;
+  }).join('')
+  +`<div class="ir-note">Lecture : chaque scénario est comparé au plus sobre. Barres proportionnelles à l'empreinte carbone annuelle (estimation centrale).</div>`;
+}
+function renderClassDist(results){
+  const container=document.getElementById('cmp-class-dist-container');if(!container)return;
+  const rows=results.map(r=>{
+    const segs=LETTERS.map(c=>{
+      const p=r.classProbs[c]*100;if(p<0.5)return'';
+      return`<div class="cmp-class-seg score-${c}" style="width:${p.toFixed(1)}%">${p>=8?c:''}</div>`;
+    }).join('');
+    return`<div class="cmp-class-row">
+      <span class="cmp-class-label" style="color:${r.scenarioColor}">${r.scenarioName}</span>
+      <div class="cmp-class-bar">${segs}</div>
+    </div>`;
+  }).join('');
+  const legend=LETTERS.map(c=>`<span class="pill score-${c}">${c}</span>`).join(' ');
+  container.innerHTML=rows+`<div class="scale-legend" style="margin-top:10px">${legend}<span style="font-size:10px;color:var(--muted);margin-left:6px">tCO₂e/an</span></div>`;
+}
+
+function renderRelativeCmp(results){
+  const container=document.getElementById('cmp-relative-container');if(!container)return;
+  if(results.length<2)return; // visibilité pilotée uniquement par le sélecteur de vues
+  const base=results[0];
+  const metrics=[
+    {key:'co2',label:'Carbone',icon:'🌡️'},
+    {key:'kwh',label:'Électricité',icon:'⚡'},
+    {key:'water',label:'Eau',icon:'💧'},
+  ];
+  container.innerHTML=results.slice(1).map(sc=>{
+    const cards=metrics.map(m=>{
+      const ratio=base[m.key].p50>0?sc[m.key].p50/base[m.key].p50:1;
+      const isMore=ratio>1.01;
+      const isLess=ratio<0.99;
+      const color=isMore?'#c1121f':isLess?'#1a7431':'#64748b';
+      const diffPct=Math.abs(ratio-1)*100;
+      const arrow=isMore?'↑':isLess?'↓':'=';
+      return`<div class="rel-metric">
+        <div class="rel-metric-icon">${m.icon} ${m.label}</div>
+        <div class="rel-metric-val" style="color:${color}">${ratio.toFixed(1)}×</div>
+        <div class="rel-metric-diff" style="color:${color}">${arrow} ${diffPct.toFixed(0)}%</div>
+      </div>`;
+    }).join('');
+    return`<div class="rel-cmp-card" style="--scol:${sc.scenarioColor}">
+      <div class="rel-cmp-title" style="color:${sc.scenarioColor}">${sc.scenarioName} <span style="font-weight:400;color:var(--muted)">vs</span> ${base.scenarioName}</div>
+      <div class="rel-metrics-row">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// BOX PLOTS (Canvas 2D — mode standard)
+// ═══════════════════════════════════════════════════
+function niceMax(v){
+  if(v<=0)return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(v)));
+  const f=v/e;
+  if(f<=1)return e;if(f<=2)return 2*e;if(f<=5)return 5*e;return 10*e;
+}
+function co2ScaleMax(p95){
+  const thr=[1,5,25,100,500,1000];
+  for(const t of thr){if(p95<=t)return t;}
+  return niceMax(p95*1.2);
+}
+function drawBoxPlot(id,p5,p25,p50,p75,p95,unit,dark,light){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');const dpr=window.devicePixelRatio||1;
+  const cw=130,ch=290;canvas.width=cw*dpr;canvas.height=ch*dpr;ctx.scale(dpr,dpr);
+  const W=cw,H=ch;ctx.clearRect(0,0,W,H);
+  const PT=54,PB=54,dH=H-PT-PB,cx=W/2,bw=46;
+  // Échelle fixe : CO₂ → seuils EcoScore ; kWh/eau → arrondi "nice"
+  const yMax=unit==='tCO₂e'?co2ScaleMax(p95):niceMax(p95*1.1||1);
+  const yT=yMax,yB=0,span=yT-yB||1;
+  const toY=v=>PT+(1-(v-yB)/span)*dH;
+  const yP5=toY(p5),yP25=toY(p25),yP50=toY(p50),yP75=toY(p75),yP95=toY(p95);
+  // Lignes de référence EcoScore sur le graphique CO₂
+  if(unit==='tCO₂e'){
+    const thrColors=['#10b981','#3b82f6','#8b5cf6','#f59e0b','#f97316','#ef4444'];
+    const thrVals=[1,5,25,100,500,1000];
+    const thrLetters=['A','B','C','D','E','F'];
+    thrVals.forEach((v,i)=>{
+      if(v>yMax)return;
+      const ty=toY(v);if(ty<PT||ty>PT+dH)return;
+      ctx.save();ctx.strokeStyle=thrColors[i]+'99';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(0,ty);ctx.lineTo(W,ty);ctx.stroke();
+      ctx.restore();
+      ctx.font='bold 8px Segoe UI,sans-serif';ctx.fillStyle=thrColors[i];ctx.textAlign='left';
+      ctx.fillText(thrLetters[i],2,ty-1);
+    });
+  }
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,PT);ctx.lineTo(cx,PT+dH);ctx.stroke();
+  ctx.strokeStyle=dark+'88';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,yP95);ctx.lineTo(cx,yP5);ctx.stroke();
+  ctx.fillStyle=light+'cc';ctx.strokeStyle=dark;ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect(cx-bw/2,yP75,bw,yP25-yP75,5);ctx.fill();ctx.stroke();
+  const ww=bw*.55;
+  [yP5,yP95].forEach(y=>{ctx.beginPath();ctx.moveTo(cx-ww/2,y);ctx.lineTo(cx+ww/2,y);ctx.stroke();});
+  ctx.strokeStyle=dark;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-bw/2+3,yP50);ctx.lineTo(cx+bw/2-3,yP50);ctx.stroke();
+  ctx.textAlign='center';
+  ctx.font='bold 12px Segoe UI,sans-serif';ctx.fillStyle=dark;ctx.fillText(fmtFull(p95),cx,16);
+  ctx.font='10px Segoe UI,sans-serif';ctx.fillStyle='#64748b';ctx.fillText(unit,cx,29);
+  ctx.fillStyle=dark;ctx.fillText('▼',cx,44);ctx.fillText('▲',cx,H-42);
+  ctx.font='bold 12px Segoe UI,sans-serif';ctx.fillStyle=dark;ctx.fillText(fmtFull(p5),cx,H-27);
+  ctx.font='10px Segoe UI,sans-serif';ctx.fillStyle='#64748b';ctx.fillText(unit,cx,H-12);
+  ctx.font='bold 11px Segoe UI,sans-serif';ctx.fillStyle=dark;ctx.textAlign='left';
+  ctx.fillText('~'+fmtFull(p50),cx+bw/2+5,yP50+4);
+}
+
+// ═══════════════════════════════════════════════════
+// EXPORT — Téléchargement HTML
+// ═══════════════════════════════════════════════════
+function buildReportHTML(autoprint){
+  const date=new Date().toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'});
+  const CLS_BG={A:'#1a7431',B:'#40916c',C:'#74c69d',D:'#e9c46a',E:'#f4a261',F:'#e76f51',G:'#c1121f'};
+  const CLS_TXT={C:'#14532d',D:'#713f12'};
+  const clsBadge=(cls,size)=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:${size/5}px;background:${CLS_BG[cls]||'#999'};color:${CLS_TXT[cls]||'#fff'};font-size:${size*0.55}px;font-weight:900">${cls}</span>`;
+  const secT=t=>`<h2 style="font-size:15px;font-weight:800;margin:26px 0 10px;color:#0f4c97;border-bottom:2px solid #dce6f1;padding-bottom:5px">${t}</h2>`;
+  const TD='padding:8px 12px;border-bottom:1px solid #eef2f7;vertical-align:top';
+  const TH='padding:7px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#5d7288;border-bottom:2px solid #dce6f1;white-space:nowrap';
+
+  // ─── Périmètre d'entrée (lignes libellé / valeur) ───
+  const inputRows=inp=>{
+    const rows=[
+      ['🤖 Modèle',`${inp.modelName||'—'} <span style="color:#94a3b8">(énergie : ${inp.dec_min} – ${inp.dec_max} Wh / 100k tokens)</span>`],
+      ['🏢 Datacenter',`${inp.dcName||'—'} <span style="color:#94a3b8">(PUE ${inp.pue} · ${inp.carbon} gCO₂e/kWh · eau ${(inp.wue+inp.ewif).toFixed(3)} L/kWh)</span>`],
+      ['👥 Volumétrie',`${fmt(inp.n_users)} utilisateurs × ${fmt(inp.n_conv)} conversations/an × ${fmt(inp.n_msg)} messages`],
+      ['✉️ Tailles (tokens)',`requête ${fmt(inp.req_sz)} · réponse ${fmt(inp.resp_sz)} · prompt système ${fmt(inp.sys_sz)} · historique ${inp.history?'activé':'désactivé'}`],
+      ['📚 RAG',inp.rag?`activé — ${fmt(inp.n_docs)} documents × ${fmt(inp.n_pages)} pages, rafraîchissement ${fmt(inp.n_refresh)}/mois`:'désactivé'],
+      ['🛠️ Fine-tuning',inp.ft?`activé — ${fmt(inp.ft_ex)} exemples × ${fmt(inp.ft_ep)} passes`:'désactivé'],
+    ];
+    return`<table style="width:100%;border-collapse:collapse;font-size:12.5px">${rows.map(([l,v])=>`<tr><td style="${TD};width:170px;font-weight:700;white-space:nowrap">${l}</td><td style="${TD}">${v}</td></tr>`).join('')}</table>`;
+  };
+
+  let body='';
+  if(lastResults.type==='compare'){
+    // ══════════ RAPPORT COMPARAISON ══════════
+    const results=lastResults.data;
+    const best=Math.min(...results.map(r=>r.co2.p50));
+    const common=results[0].rawInp||{};
+    body+=secT('1 · Périmètre commun de la comparaison')+inputRows(common)
+      +`<p style="font-size:11px;color:#94a3b8;margin-top:6px">L'axe comparé varie par scénario (voir tableau) ; tous les autres paramètres sont ceux ci-dessus.</p>`;
+
+    body+=secT('2 · Paramètres par scénario')
+      +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <tr><th style="${TH}">Scénario</th><th style="${TH}">Modèle</th><th style="${TH}">Datacenter</th><th style="${TH}">Utilisateurs</th><th style="${TH}">RAG</th><th style="${TH}">Fine-tuning</th></tr>`
+      +results.map(r=>{const i=r.rawInp||{};return`<tr>
+        <td style="${TD};font-weight:800;color:${r.scenarioColor}">● ${r.scenarioName}</td>
+        <td style="${TD}">${i.modelName||'—'}</td><td style="${TD}">${i.dcName||'—'}</td>
+        <td style="${TD}">${fmt(i.n_users)}</td><td style="${TD}">${i.rag?'oui':'non'}</td><td style="${TD}">${i.ft?'oui':'non'}</td></tr>`;}).join('')
+      +'</table>';
+
+    body+=secT('3 · Résultats')
+      +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <tr><th style="${TH}">Scénario</th><th style="${TH}">Classe</th><th style="${TH}">Carbone / an</th><th style="${TH}">Fourchette probable</th><th style="${TH}">Électricité / an</th><th style="${TH}">Eau / an</th><th style="${TH}">CO₂e / conversation</th><th style="${TH}">vs plus sobre</th></tr>`
+      +results.map(r=>{
+        const conv=Math.max((r.n_users||1)*(r.n_conv||1),1);
+        const isBest=r.co2.p50===best;
+        return`<tr>
+        <td style="${TD};font-weight:800;color:${r.scenarioColor}">● ${r.scenarioName}</td>
+        <td style="${TD}">${clsBadge(getScore(r.co2.p50),26)}</td>
+        <td style="${TD};font-weight:700">${fmtCO2u(r.co2.p50)}</td>
+        <td style="${TD};color:#5d7288">${fmtCO2u(r.co2.p5)} – ${fmtCO2u(r.co2.p95)}</td>
+        <td style="${TD}">${fmt(r.kwh.p50)} kWh</td><td style="${TD}">${fmt(r.water.p50)} L</td>
+        <td style="${TD}">${fmt(r.co2.p50/conv*1e6)} g</td>
+        <td style="${TD}">${isBest?'<strong style="color:#00733c">✓ le plus sobre</strong>':'+'+fmt((r.co2.p50-best)/best*100)+' %'}</td></tr>`;}).join('')
+      +'</table>';
+
+    const sorted=[...results].sort((a,b)=>a.co2.p50-b.co2.p50);
+    body+=secT('4 · Ce que le choix de scénario change')
+      +sorted.map((r,i)=>{
+        const d=r.co2.p50-sorted[0].co2.p50;
+        return`<p style="font-size:12.5px;margin:6px 0">${['🥇','🥈','🥉'][i]||(i+1)+'ᵉ'} <strong style="color:${r.scenarioColor}">${r.scenarioName}</strong> — ${fmtCO2u(r.co2.p50)}/an${i===0?' · <strong style="color:#00733c">le choix le plus sobre</strong>':` · +${fmtCO2u(d)}/an vs le plus sobre (×${(r.co2.p50/sorted[0].co2.p50).toFixed(1)})${d/1.7>=0.5?` · ✈️ ≈ ${fmt(d/1.7)} vols Paris–New York évitables`:''}`}</p>`;}).join('');
+
+    body+=secT('5 · Run — 1 an d\'utilisation (estimation centrale)')
+      +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <tr><th style="${TH}">Scénario</th><th style="${TH}">⚡ Électricité</th><th style="${TH}">🌡️ Carbone</th><th style="${TH}">💧 Eau</th><th style="${TH}">Tokens entrants</th><th style="${TH}">Tokens sortants</th></tr>`
+      +results.map(r=>`<tr><td style="${TD};font-weight:800;color:${r.scenarioColor}">● ${r.scenarioName}</td>
+        <td style="${TD}">${fmt(r.kwh_run_p50)} kWh</td><td style="${TD}">${fmtCO2u(r.co2_run_p50)}</td><td style="${TD}">${fmt(r.wat_run_p50)} L</td>
+        <td style="${TD}">${fmt(r.tok_req)}</td><td style="${TD}">${fmt(r.tok_resp)}</td></tr>`).join('')
+      +'</table>';
+    if(results.some(r=>r.hasBuild)){
+      body+=secT('6 · Build — mise en place (une seule fois)')
+        +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <tr><th style="${TH}">Scénario</th><th style="${TH}">⚡ Électricité</th><th style="${TH}">🌡️ Carbone</th><th style="${TH}">💧 Eau</th></tr>`
+        +results.map(r=>`<tr><td style="${TD};font-weight:800;color:${r.scenarioColor}">● ${r.scenarioName}</td>
+          ${r.hasBuild?`<td style="${TD}">${fmt(r.kwh_bld_p50)} kWh</td><td style="${TD}">${fmtCO2u(r.co2_bld_p50)}</td><td style="${TD}">${fmt(r.wat_bld_p50)} L</td>`:`<td style="${TD}">—</td><td style="${TD}">—</td><td style="${TD}">—</td>`}</tr>`).join('')
+        +'</table>';
+    }
+  }else{
+    // ══════════ RAPPORT ESTIMATION SIMPLE ══════════
+    const r=lastResults.data;
+    const raw=r.rawInp||{};
+    const cls=getScore(r.co2.p50),c5=getScore(r.co2.p5),c95=getScore(r.co2.p95);
+
+    body+=secT('1 · Périmètre de l\'estimation')+inputRows(raw);
+
+    body+=secT('2 · Résultat : EcoScore du cas d\'usage')
+      +`<div style="display:flex;align-items:center;gap:18px;margin:8px 0 4px">${clsBadge(cls,64)}
+        <div><div style="font-size:15px">Empreinte carbone estimée entre <strong style="color:#0f4c97">${fmt(r.co2.p5)}</strong> et <strong style="color:#0f4c97">${fmt(r.co2.p95)}</strong> tonnes de CO₂e par an.</div>
+        <div style="font-size:12px;color:#5d7288;margin-top:3px">${c5===cls&&c95===cls?`Ce cas d'usage se situe en classe ${cls} sur l'échelle A → G.`:`Selon les hypothèses retenues, la note peut aller de ${c5} à ${c95} — l'estimation centrale est ${cls}.`}</div></div></div>`;
+
+    body+=secT('3 · Métriques environnementales (annuel)')
+      +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      <tr><th style="${TH}">Métrique</th><th style="${TH}">Estimation centrale</th><th style="${TH}">Fourchette probable</th><th style="${TH}">Équivalence</th></tr>
+      <tr><td style="${TD}">🌡️ Carbone</td><td style="${TD};font-weight:700">${fmtCO2u(r.co2.p50)}</td><td style="${TD};color:#5d7288">${fmtCO2u(r.co2.p5)} – ${fmtCO2u(r.co2.p95)}</td><td style="${TD}">✈️ ${fmt(r.co2.p50/1.7)} vols Paris–New York</td></tr>
+      <tr><td style="${TD}">⚡ Électricité</td><td style="${TD};font-weight:700">${fmt(r.kwh.p50)} kWh</td><td style="${TD};color:#5d7288">${fmt(r.kwh.p5)} – ${fmt(r.kwh.p95)} kWh</td><td style="${TD}">🏠 conso élec. de ${fmt(r.kwh.p50/2223)} Français</td></tr>
+      <tr><td style="${TD}">💧 Eau</td><td style="${TD};font-weight:700">${fmt(r.water.p50)} L</td><td style="${TD};color:#5d7288">${fmt(r.water.p5)} – ${fmt(r.water.p95)} L</td><td style="${TD}">🧍 conso d'eau de ${fmt(r.water.p50/54000)} Français</td></tr>
+      </table>`;
+
+    const nU=Math.max(raw.n_users||1,1),nC=Math.max((raw.n_users||1)*(raw.n_conv||1),1),nM=nC*Math.max(raw.n_msg||1,1);
+    body+=secT('4 · Consommation ramenée à l\'usage (estimation centrale, mise en place incluse)')
+      +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      <tr><th style="${TH}">Échelle</th><th style="${TH}">🌡️ Carbone</th><th style="${TH}">⚡ Électricité</th><th style="${TH}">💧 Eau</th><th style="${TH}">Équivalence carbone</th></tr>
+      ${[['👤 Par utilisateur / an',nU],['💬 Par conversation',nC],['✉️ Par message',nM]].map(([l,d])=>
+        `<tr><td style="${TD}">${l}</td><td style="${TD};font-weight:700">${fmtCO2u(r.co2.p50/d)}</td><td style="${TD}">${fmtEu(r.kwh.p50/d)}</td><td style="${TD}">${fmtWu(r.water.p50/d)}</td><td style="${TD}">🚗 ${eqCar(r.co2.p50/d)}</td></tr>`).join('')}
+      </table>`;
+
+    if(r.decomp){
+      const d=r.decomp;
+      const postes=[['Encodage (entrées)',d.co2_enc],['Décodage (réponses)',d.co2_dec],['RAG — refresh (run)',d.co2_rag_run],['RAG — vectorisation (build)',d.co2_rag_bld],['Fine-tuning (build)',d.co2_ft]].filter(x=>x[1]>d.total*0.002);
+      body+=secT('5 · D\'où vient l\'impact ?')
+        +postes.map(([l,v])=>`<div style="display:flex;align-items:center;gap:10px;font-size:12.5px;margin:5px 0">
+          <div style="width:190px">${l}</div>
+          <div style="flex:1;height:11px;background:#f6f9fc;border-radius:999px;overflow:hidden"><div style="width:${(v/d.total*100).toFixed(1)}%;height:100%;background:#0f4c97;border-radius:999px"></div></div>
+          <div style="width:120px;text-align:right"><strong>${(v/d.total*100).toFixed(1)} %</strong> · ${fmtCO2u(v)}</div></div>`).join('');
+    }
+
+    const lv=computeLevers(raw);
+    if(lv.rows.length){
+      body+=secT('6 · Leviers de sobriété (un paramètre modifié à la fois)')
+        +lv.rows.map(x=>`<p style="font-size:12.5px;margin:5px 0">🔧 <strong>${x.lbl}</strong> : ${x.pct<0?'−':'+'}${Math.abs(x.pct).toFixed(0)} % <span style="color:#5d7288">(${x.delta<0?'−':'+'}${fmtCO2u(Math.abs(x.delta))}/an)</span></p>`).join('')
+        +`<p style="font-size:11px;color:#94a3b8">Base : ${fmtCO2u(lv.base)}/an (estimation centrale).</p>`;
+    }
+
+    const tm=thrLinearModel(raw);
+    if(tm.a>0){
+      const nextT=[1,5,25,100,500,1000].find(t=>t>tm.eC);
+      const cfg=THR_AXIS_CFG[thresholdAxis];
+      body+=secT('7 · Seuil de bascule')
+        +`<p style="font-size:12.5px">Aujourd'hui : <strong>${fmt(tm.cur)}</strong> ${cfg.unitLong} → classe <strong>${cls}</strong>.${nextT?` Au rythme d'usage actuel, le cas d'usage passe en classe <strong>${getScore(nextT*1.001)}</strong> au-delà d'environ <strong>${fmt((nextT-tm.e0)/tm.a)}</strong> ${cfg.unitLong}.`:' Déjà dans la classe la plus élevée.'}</p>`;
+    }
+  }
+
+  // ─── Gabarit AI Builders ───
+  const year=new Date().getFullYear();
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>EcoScore IA — Rapport AI Builders</title>
+<style>
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',Arial,sans-serif;max-width:940px;margin:0 auto;padding:0 0 32px;color:#16324f;background:#fff}
+@page{size:A4;margin:12mm 11mm}
+@media print{
+  body{padding:0;max-width:none}
+  h2{page-break-after:avoid;break-after:avoid}
+  table,tr{page-break-inside:avoid;break-inside:avoid}
+  .print-hint{display:none}
+}
+</style></head><body>
+<div style="background:radial-gradient(900px 260px at 78% -60%,rgba(0,140,200,.30),transparent 60%),radial-gradient(600px 200px at 30% 140%,rgba(0,80,120,.35),transparent 65%),linear-gradient(100deg,#001526 0%,#052b4d 55%,#0a4a6e 100%);color:#fff;padding:26px 40px;border-bottom:3px solid #00c864">
+  <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+    <div style="line-height:1.05;padding-right:22px;border-right:1px solid rgba(255,255,255,.25)">
+      <div style="font-size:24px;font-weight:600">AI&thinsp;Builders</div>
+      <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.24em;color:rgba(255,255,255,.8);margin-top:2px">Le leader de la stratégie data et IA</div>
+    </div>
+    <div><div style="font-size:15px;font-weight:800;color:#9bdcf5;letter-spacing:.14em;text-transform:uppercase">Ecoscore IA</div>
+      <div style="width:36px;height:3px;background:#fff;border-radius:2px;margin-top:4px"></div></div>
+    <div style="margin-left:auto;font-size:12px;color:rgba(255,255,255,.85)">${lastResults.type==='compare'?'Rapport de comparaison de scénarios':'Rapport d\'estimation'}<br><span style="color:rgba(255,255,255,.6)">${date}</span></div>
+  </div>
+</div>
+${autoprint?`<div class="print-hint" style="background:#fff8e6;border-bottom:1px solid #f0b43c;padding:9px 40px;font-size:12.5px;color:#713f12">📄 La boîte d'impression devrait s'ouvrir automatiquement. Sinon : <strong>Ctrl+P</strong> (ou <strong>Cmd+P</strong>) puis « Enregistrer en PDF ».</div>`:''}
+<div style="padding:10px 40px 0">${body}</div>
+<div style="margin:38px 40px 0;padding-top:12px;border-top:1px solid #dce6f1;font-size:10.5px;color:#94a3b8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+  <span>Confidentiel — © AI Builders ${year} — Tous droits réservés</span>
+  <span>EcoScore IA · Modèle d'estimation environnementale des usages d'IA générative</span>
+</div>
+${autoprint?`<script>window.addEventListener('load',function(){setTimeout(function(){try{window.print();}catch(e){}},450);});</`+`script>`:''}
+</body></html>`;
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════
+// MODE DE SESSION : test (exploratoire) vs estimation (exportable, comptabilisée)
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// CONNEXION AU BACKEND (optionnelle)
+// ═══════════════════════════════════════════════════
+// Laisser vide '' pour un usage 100% autonome (fichier local, artifact) : les abaques
+// codées en dur ci-dessus restent utilisées, et la journalisation est simplement ignorée.
+// Une fois le backend déployé (voir ecoscore_backend/README.md), renseigner son URL ici,
+// par ex. 'https://ecoscore-api.onrender.com' (sans slash final).
+const API_BASE='';
+let referenceVersion=null;
+
+async function loadReferenceData(){
+  if(!API_BASE)return;
+  try{
+    const res=await fetch(API_BASE+'/reference-data');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(Array.isArray(data.models)&&data.models.length){
+      MODELS.length=0;
+      data.models.forEach(m=>MODELS.push([m.provider,m.name,m.class||'',m.dec_min,m.dec_max,m.params_b??null]));
+    }
+    if(Array.isArray(data.datacenters)&&data.datacenters.length){
+      Object.keys(DATACENTER).forEach(k=>delete DATACENTER[k]);
+      data.datacenters.forEach(d=>{DATACENTER[d.name]={PUE:d.pue,carbon:d.carbon_g_per_kwh,
+        wue:d.wue_l_per_kwh??(d.water_l_per_kwh/2),ewif:d.ewif_l_per_kwh??(d.water_l_per_kwh/2)};});
+    }
+    referenceVersion=data.version||null;
+    rebuildProviderAndDCOptions(); // les <option> fournisseur/datacenter sont statiques en HTML : à resynchroniser
+    filterModels();updateDC();
+    console.info('Abaques chargées depuis le backend (version '+(referenceVersion||'?')+').');
+  }catch(e){console.warn('Chargement des abaques distantes impossible, abaques locales conservées :',e);}
+}
+
+function rebuildProviderAndDCOptions(){
+  const provSel=document.getElementById('provider_select');
+  if(provSel){
+    const cur=provSel.value;
+    const provs=[...new Set(MODELS.map(m=>m[0]))];
+    provSel.innerHTML=provs.map(p=>`<option${p===cur?' selected':''}>${p}</option>`).join('');
+    if(!provs.includes(cur)&&provs.length)provSel.value=provs[0];
+  }
+  const dcSel=document.getElementById('dc_country');
+  if(dcSel){
+    const cur=dcSel.value;
+    const names=Object.keys(DATACENTER);
+    dcSel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('')
+      +`<option value="autre"${cur==='autre'?' selected':''}>Autre (personnalisé)</option>`;
+    if(!names.includes(cur)&&cur!=='autre')dcSel.value=names[0]||'autre';
+  }
+}
+
+// Journalisation réelle : POST /usage si un backend est configuré (voir logUsageEvent ci-dessous
+// pour la version window.storage utilisée dans l'artifact Claude — les deux coexistent sans conflit).
+async function postUsageToBackend(payload){
+  if(!API_BASE)return;
+  try{
+    await fetch(API_BASE+'/usage',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        mode:payload.kind==='compare'?'compare':'simple',
+        client_id:getAnonClientId(),
+        reference_version:referenceVersion,
+        inputs:payload.kind==='compare'?{scenarios:payload.scenarios.map(s=>s.input)}:payload.input,
+        results:payload.kind==='compare'
+          ?{scenarios:payload.scenarios.map(s=>({name:s.name,co2_p50:s.co2_p50,classe:s.classe}))}
+          :{co2_p50:payload.co2_p50,classe:payload.classe},
+      }),
+    });
+  }catch(e){console.warn("Envoi au backend indisponible (l'export continue normalement) :",e);}
+}
+function getAnonClientId(){
+  // Ce fichier étant destiné à un hébergement externe (GitHub Pages), un identifiant
+  // anonyme persistant via localStorage est approprié ici — jamais de nom/email/IP.
+  try{
+    let id=localStorage.getItem('ecoscore_anon_id');
+    if(!id){id='anon-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('ecoscore_anon_id',id);}
+    return id;
+  }catch(e){
+    if(!window._ecoscoreAnonId)window._ecoscoreAnonId='anon-'+Math.random().toString(36).slice(2,10);
+    return window._ecoscoreAnonId;
+  }
+}
+
+let sessionMode='test'; // 'test' ou 'estimation'
+
+function setSessionMode(mode){
+  sessionMode=mode;
+  const bar=document.getElementById('session_mode_bar');
+  const title=document.getElementById('smb_title');
+  const desc=document.getElementById('smb_desc');
+  const toggle=document.getElementById('smb_toggle');
+  if(sessionMode==='estimation'){
+    bar.classList.add('estimation');
+    title.textContent='📊 Mode estimation';
+    desc.textContent="Exportable.";
+    toggle.textContent='← Repasser en mode Test';
+  }else{
+    bar.classList.remove('estimation');
+    title.textContent='🧪 Mode test';
+    desc.textContent="Non exportable.";
+    toggle.textContent='Passer en mode Estimation →';
+  }
+  updateExportLock();
+}
+function toggleSessionMode(){setSessionMode(sessionMode==='test'?'estimation':'test');}
+
+function chooseEntryMode(mode){
+  setSessionMode(mode);
+  const ov=document.getElementById('entry-overlay');
+  if(ov){ov.classList.add('hidden');setTimeout(()=>ov.style.display='none',350);}
+}
+
+function updateExportLock(){
+  const locked=sessionMode==='test';
+  document.querySelectorAll('.export-zone .export-btn').forEach(b=>b.disabled=locked);
+  document.querySelectorAll('.export-lock-note').forEach(n=>n.style.display=locked?'':'none');
+}
+
+function summarizeInputForLog(raw){
+  if(!raw)return{};
+  return{modelName:raw.modelName,dcName:raw.dcName,n_users:raw.n_users,n_conv:raw.n_conv,
+    n_msg:raw.n_msg,rag:!!raw.rag,ft:!!raw.ft};
+}
+
+// Journalisation best-effort dans le stockage partagé de l'artifact (window.storage).
+// N'échoue jamais bruyamment et ne bloque jamais l'export : constat d'usage réel,
+// destiné à devenir un vrai appel au backend une fois l'outil hébergé.
+async function logUsageEvent(exportKind){
+  if(sessionMode!=='estimation'||!lastResults)return;
+  let payload;
+  if(lastResults.type==='compare'){
+    payload={ts:new Date().toISOString(),kind:'compare',usageType,exportKind,
+      scenarios:lastResults.data.map(r=>({name:r.scenarioName,co2_p50:r.co2.p50,
+        classe:getScore(r.co2.p50),input:summarizeInputForLog(r.rawInp)}))};
+  }else{
+    const r=lastResults.data;
+    payload={ts:new Date().toISOString(),kind:'simple',usageType,exportKind,
+      co2_p50:r.co2.p50,classe:getScore(r.co2.p50),input:summarizeInputForLog(r.rawInp)};
+  }
+  // Piste 1 : stockage partagé de l'artifact Claude (si disponible dans ce contexte)
+  try{
+    if(window.storage){
+      const id='usage:'+Date.now()+':'+Math.random().toString(36).slice(2,8);
+      await window.storage.set(id,JSON.stringify(payload),true);
+    }
+  }catch(e){console.warn('window.storage indisponible :',e);}
+  // Piste 2 : backend réel (si API_BASE configuré — cas du déploiement hébergé)
+  postUsageToBackend(payload);
+}
+
+function exportReport(){
+  if(!lastResults){alert('Lancez d\'abord un calcul.');return;}
+  if(sessionMode!=='estimation'){alert('Passez en mode Estimation pour exporter un rapport.');return;}
+  logUsageEvent('html');
+  const html=buildReportHTML();
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`AIB-EcoScore-${lastResults.type==='compare'?'comparaison':'estimation'}-${new Date().toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function isEmbedded(){try{return window.self!==window.top;}catch(e){return true;}}
+function openReportTab(html){
+  // Nouvel onglet de premier niveau : l'impression y est autorisée et se lance seule
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.target='_blank';a.rel='noopener';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function exportPDF(){
+  if(!lastResults){alert('Lancez d\'abord un calcul.');return;}
+  if(sessionMode!=='estimation'){alert('Passez en mode Estimation pour exporter un rapport.');return;}
+  logUsageEvent('pdf');
+  const html=buildReportHTML(true);
+  if(isEmbedded()){
+    // Contexte sandboxé (ex. aperçu artifact) : print() y est bloqué → onglet dédié
+    try{openReportTab(html);}catch(e){exportReport();}
+    return;
+  }
+  try{
+    // Fichier ouvert directement : impression discrète via un cadre invisible
+    const ifr=document.createElement('iframe');
+    ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(ifr);
+    const doc=ifr.contentWindow.document;
+    doc.open();doc.write(buildReportHTML(false));doc.close();
+    const doPrint=()=>{
+      try{
+        ifr.contentWindow.focus();
+        if(typeof ifr.contentWindow.print==='function'){ifr.contentWindow.print();}
+        else{throw new Error('print indisponible');}
+        setTimeout(()=>ifr.remove(),4000);
+      }catch(e){ifr.remove();openReportTab(html);}
+    };
+    if(doc.readyState==='complete')setTimeout(doPrint,150);
+    else ifr.onload=()=>setTimeout(doPrint,150);
+  }catch(e){try{openReportTab(html);}catch(e2){exportReport();}}
+}
+
+// ═══════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════
+function filterModels(){
+  const prov=document.getElementById('provider_select').value;
+  const sel=document.getElementById('model_select');sel.innerHTML='';
+  MODELS.forEach(([p,name,cls],i)=>{if(p!==prov)return;const o=document.createElement('option');o.value=i;o.textContent=name;sel.appendChild(o);});
+  updateModelInfo();
+}
+function updateModelInfo(){
+  const sel=document.getElementById('model_select');if(!sel||sel.value==='')return;
+  const[,name,cls,dmin,dmax,params]=MODELS[+sel.value];
+  const el=document.getElementById('model_info');
+  el.innerHTML=`<strong>${name}</strong>${params?` · ${params}B params`:''}<br>Fourchette : <strong>${dmin.toFixed(4)}</strong> – <strong>${dmax.toFixed(4)}</strong> Wh/100k tokens`;
+  el.style.display='';
+}
+function updateDC(){
+  const val=document.getElementById('dc_country').value;const c=val==='autre';
+  document.getElementById('dc_readonly').style.display=c?'none':'';
+  document.getElementById('dc_custom').style.display=c?'':'none';
+  if(!c){const dc=DATACENTER[val];if(!dc)return;
+    document.getElementById('dc_pue_disp').textContent=dc.PUE;
+    document.getElementById('dc_carbon_disp').textContent=dc.carbon;
+    document.getElementById('dc_wue_disp').textContent=dc.wue;
+    document.getElementById('dc_ewif_disp').textContent=dc.ewif;
+  }
+}
+function getDC(){
+  const val=document.getElementById('dc_country').value;
+  if(val==='autre')return{PUE:parseFloat(document.getElementById('dc_pue_input').value)||1.5,carbon:parseFloat(document.getElementById('dc_carbon_input').value)||400,wue:parseFloat(document.getElementById('dc_wue_input').value)||1.5,ewif:parseFloat(document.getElementById('dc_ewif_input').value)||0.5};
+  return DATACENTER[val];
+}
+function toggleSection(cid,sid){document.getElementById(sid).classList.toggle('open',document.getElementById(cid).checked);}
+function toggleCustomField(sid,fid){document.getElementById(fid).style.display=document.getElementById(sid).value==='custom'?'':'none';}
+
+filterModels();updateDC();buildVizChips();updateThresholdAxisAvailability();renderUsageTypeBadges();updateExportLock();
+loadReferenceData();
+
+// ── Mini LaTeX renderer (sans CDN) ─────────────────
+(function(){
+  const SYMS={
+    '\\mathcal{N}':'𝒩','\\varepsilon':'ε','\\Delta':'Δ','\\sigma':'σ',
+    '\\mu':'μ','\\times':'×','\\cdot':'·','\\sim':'∼','\\ln':'ln',
+    '\\qquad':'<span style="display:inline-block;width:1.8em"></span>',
+    '\\quad':'<span style="display:inline-block;width:.9em"></span>',
+    '\\,':'<span style="display:inline-block;width:.18em"></span>',
+    '\\!':'','\\bigl(':'(','\\bigr)':')','\\bigg|':'|',
+    '\\left(':'(','\\right)':')','\\mathrel{+}=':'+=',
+    '\\ge':'≥','\\le':'≤','\\geq':'≥','\\leq':'≤',
+    '\\mathbf':'','\\mathrm':'',
+  };
+  function tex2html(s){
+    for(const[k,v] of Object.entries(SYMS)) s=s.split(k).join(v);
+    for(let i=0;i<4;i++)
+      s=s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,
+        (_,n,d)=>`<span class="mfrac"><span class="mnum">${n}</span><span class="mden">${d}</span></span>`);
+    s=s.replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>');
+    s=s.replace(/\^([^\s{\\,])/g,'<sup>$1</sup>');
+    s=s.replace(/_\{([^}]*)\}/g,'<sub>$1</sub>');
+    s=s.replace(/_([^\s{\\,])/g,'<sub>$1</sub>');
+    return s;
+  }
+  function processBox(box){
+    box.innerHTML=box.innerHTML.replace(/\\\[([\s\S]*?)\\\]/g,(_,c)=>
+      `<div class="math-block">${tex2html(c.trim())}</div>`);
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.querySelectorAll('.formula-box').forEach(processBox);
+  });
+})();
+</script>
+
+</body>
+</html>
