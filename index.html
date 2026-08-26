@@ -97,6 +97,7 @@ header{
 .ef-field{display:flex;flex-direction:column;gap:5px}
 .ef-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.9)}
 .ef-req{color:#f0b43c}
+.ef-helper{font-size:10.5px;font-weight:400;color:rgba(255,255,255,.55);margin-top:-2px}
 .ef-field input{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;font-family:inherit}
 .ef-field input::placeholder{color:rgba(255,255,255,.4)}
 .ef-field input:focus{outline:none;border-color:#00c864;background:rgba(255,255,255,.12)}
@@ -421,7 +422,20 @@ input:checked+.slider:before{transform:translateX(18px)}
 
 /* ── DOCS ── */
 #tab-docs{padding:28px;max-width:920px;margin:0 auto}
-.doc-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--border)}
+.md-doc{padding:24px 28px;max-width:820px;margin:0 auto;line-height:1.65;color:var(--text)}
+.md-doc .md-h1{font-size:22px;font-weight:800;color:var(--primary);margin:0 0 18px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.md-doc .md-h2{font-size:17px;font-weight:800;color:var(--text);margin:32px 0 12px}
+.md-doc .md-h3{font-size:14px;font-weight:700;color:var(--primary);margin:20px 0 8px}
+.md-doc .md-p{font-size:13.5px;margin:0 0 12px}
+.md-doc .md-ul,.md-doc .md-ol{margin:0 0 14px;padding-left:22px;font-size:13.5px;display:flex;flex-direction:column;gap:7px}
+.md-doc .md-ul li,.md-doc .md-ol li{padding-left:2px}
+.md-doc .md-quote{border-left:3px solid var(--eco);background:var(--inp);padding:10px 16px;margin:0 0 16px;font-size:12.5px;color:var(--muted);border-radius:0 8px 8px 0}
+.md-doc .md-table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:12.5px}
+.md-doc .md-table th{background:var(--inp);text-align:left;padding:8px 12px;font-weight:700;border-bottom:2px solid var(--border)}
+.md-doc .md-table td{padding:7px 12px;border-bottom:1px solid var(--border)}
+.md-doc .md-hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+.md-doc code{background:var(--inp);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'SF Mono',Consolas,monospace;font-size:12px;color:var(--primary)}
+.md-doc strong{color:var(--text)}
 .doc-nav a{font-size:12px;font-weight:600;color:var(--primary);background:#fff;border:1px solid var(--border);padding:5px 12px;border-radius:20px;text-decoration:none}
 .doc-nav a:hover{background:var(--primary);color:#fff}
 .doc-section{background:#fff;border-radius:14px;border:1px solid var(--border);padding:28px;margin-bottom:20px}
@@ -2651,6 +2665,78 @@ ${autoprint?`<script>window.addEventListener('load',function(){setTimeout(functi
 const API_BASE='';
 let referenceVersion=null;
 
+// Documentation chargée depuis un fichier séparé (documentation.html), pour pouvoir la faire
+// évoluer sans toucher à ce fichier. Le contenu actuellement dans #tab-docs sert de repli :
+// si le fetch échoue (fichier local ouvert en double-clic, aperçu artifact Claude, fichier
+// absent), la documentation intégrée reste affichée normalement, sans aucune régression.
+// Convertisseur Markdown → HTML minimal, sans dépendance externe (pour rester autonome
+// même hors ligne). Couvre : titres #/##/###, gras/italique, listes à puces et numérotées,
+// tableaux, citations >, code en ligne `...`, séparateurs ---, paragraphes.
+function markdownToHtml(md){
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline=s=>esc(s)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>');
+  const lines=md.replace(/\r\n/g,'\n').split('\n');
+  let html='',i=0;
+  const isTableSep=l=>/^\s*\|?[\s:|-]+\|?\s*$/.test(l)&&l.includes('-');
+  while(i<lines.length){
+    const line=lines[i];
+    if(!line.trim()){i++;continue;}
+    if(/^---+$/.test(line.trim())){html+='<hr class="md-hr">';i++;continue;}
+    const h=line.match(/^(#{1,3})\s+(.*)/);
+    if(h){html+=`<h${h[1].length+1} class="md-h${h[1].length}">${inline(h[2])}</h${h[1].length+1}>`;i++;continue;}
+    if(line.trim().startsWith('>')){
+      const buf=[];
+      while(i<lines.length&&lines[i].trim().startsWith('>')){buf.push(lines[i].trim().replace(/^>\s?/,''));i++;}
+      html+=`<blockquote class="md-quote">${inline(buf.join(' '))}</blockquote>`;continue;
+    }
+    if(line.trim().startsWith('|')){
+      const rows=[];
+      while(i<lines.length&&lines[i].trim().startsWith('|')){rows.push(lines[i].trim());i++;}
+      const cells=r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const head=cells(rows[0]);
+      const body=rows.slice(1).filter(r=>!isTableSep(r)).map(cells);
+      html+='<table class="md-table"><thead><tr>'+head.map(c=>`<th>${inline(c)}</th>`).join('')+'</tr></thead><tbody>'
+        +body.map(r=>'<tr>'+r.map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+      continue;
+    }
+    if(/^[-*]\s+/.test(line)){
+      const buf=[];
+      while(i<lines.length&&/^[-*]\s+/.test(lines[i])){buf.push(lines[i].replace(/^[-*]\s+/,''));i++;}
+      html+='<ul class="md-ul">'+buf.map(x=>`<li>${inline(x)}</li>`).join('')+'</ul>';continue;
+    }
+    if(/^\d+\.\s+/.test(line)){
+      const buf=[];
+      while(i<lines.length&&/^\d+\.\s+/.test(lines[i])){buf.push(lines[i].replace(/^\d+\.\s+/,''));i++;}
+      html+='<ol class="md-ol">'+buf.map(x=>`<li>${inline(x)}</li>`).join('')+'</ol>';continue;
+    }
+    const buf=[line];i++;
+    while(i<lines.length&&lines[i].trim()&&!/^(#{1,3})\s|^[-*]\s|^\d+\.\s|^\||^>|^---+$/.test(lines[i])){buf.push(lines[i]);i++;}
+    html+=`<p class="md-p">${inline(buf.join(' '))}</p>`;
+  }
+  return html;
+}
+
+// Documentation chargée depuis un fichier Markdown séparé (documentation.md), pour pouvoir
+// la faire évoluer sans toucher à ce fichier NI risquer de casser la mise en page : le
+// Markdown ne contient aucune balise, une erreur de frappe ne peut donc jamais rompre la
+// structure de la page. Le contenu actuellement dans #tab-docs sert de repli : si le fetch
+// échoue (fichier local ouvert en double-clic, aperçu artifact Claude, fichier absent), la
+// documentation intégrée reste affichée normalement, sans aucune régression.
+async function loadExternalDocs(){
+  try{
+    const res=await fetch('documentation.md');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const md=await res.text();
+    if(md&&md.trim()){
+      document.getElementById('tab-docs').innerHTML=
+        '<div class="md-doc">'+markdownToHtml(md)+'</div>';
+    }
+  }catch(e){console.info('documentation.md non chargé (normal en local/artifact) — documentation intégrée conservée.');}
+}
+
 async function loadReferenceData(){
   if(!API_BASE)return;
   try{
@@ -2753,11 +2839,13 @@ function setSessionMode(mode){
 // suivent automatiquement. `required:false` = champ facultatif malgré le formulaire obligatoire.
 const ENTRY_FORM_FIELDS=[
   {id:'usecase_name',label:"Nom du cas d'usage",type:'text',required:true,placeholder:'Ex : Assistant support client'},
-  {id:'company_sector',label:"Domaine de l'entreprise",type:'select',required:true,
+  {id:'company_sector',label:"Secteur d'activité",type:'select',required:true,
     options:['Assurance','Banque / Finance','Retail / Distribution','Industrie','Santé','Énergie','Secteur public','Télécoms','Transport / Logistique','Autre']},
   {id:'company_name',label:"Nom de l'entreprise",type:'text',required:false,placeholder:'Ex : AXA'},
-  {id:'business_functions',label:'Typologie(s) de métier concernée(s)',type:'text',required:true,placeholder:'Ex : RH, Support client'},
-  {id:'contact',label:'Contact (nom ou e-mail)',type:'text',required:false,placeholder:'Ex : jean.dupont@aib.fr'},
+  {id:'role',label:'Votre rôle',type:'select',required:true,
+    options:['Data / IA','DSI / IT','Métier','Direction générale','RH','Finance','Juridique / Conformité','Autre']},
+  {id:'contact',label:'Contact (nom ou e-mail)',type:'text',required:false,placeholder:'Ex : jean.dupont@aib.fr',
+    helper:"Si vous souhaitez être contacté pour plus de renseignements sur l'outil."},
 ];
 let entryFormData=null; // renseigné une fois le formulaire validé, pour toute la session
 
@@ -2767,6 +2855,7 @@ function tryEnterEstimationMode(){
 }
 
 function renderEntryField(f){
+  const helper=f.helper?`<span class="ef-helper">${f.helper}</span>`:'';
   if(f.type==='select'){
     return`<label class="ef-field">
       <span class="ef-label">${f.label}${f.required?' <span class="ef-req">*</span>':''}</span>
@@ -2774,6 +2863,7 @@ function renderEntryField(f){
         <option value="">— Choisir —</option>
         ${f.options.map(o=>`<option value="${o}">${o}</option>`).join('')}
       </select>
+      ${helper}
     </label>`;
   }
   if(f.type==='multiselect'){
@@ -2782,11 +2872,13 @@ function renderEntryField(f){
       <div class="ef-checkgroup" id="ef_${f.id}">
         ${f.options.map(o=>`<label class="ef-check"><input type="checkbox" value="${o}"><span>${o}</span></label>`).join('')}
       </div>
+      ${helper}
     </div>`;
   }
   return`<label class="ef-field">
     <span class="ef-label">${f.label}${f.required?' <span class="ef-req">*</span>':''}</span>
     <input type="${f.type}" id="ef_${f.id}" placeholder="${f.placeholder||''}">
+    ${helper}
   </label>`;
 }
 function showEntryForm(){
@@ -2980,6 +3072,7 @@ function toggleCustomField(sid,fid){document.getElementById(fid).style.display=d
 
 filterModels();updateDC();buildVizChips();updateThresholdAxisAvailability();renderUsageTypeBadges();updateExportLock();
 loadReferenceData();
+loadExternalDocs();
 
 // ── Mini LaTeX renderer (sans CDN) ─────────────────
 (function(){
