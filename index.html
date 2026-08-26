@@ -93,6 +93,27 @@ header{
 .ec-title{font-size:14px;font-weight:800}
 .ec-desc{font-size:11.5px;color:rgba(255,255,255,.75);line-height:1.5}
 .entry-note{font-size:10.5px;color:rgba(255,255,255,.55);margin-top:22px}
+.entry-form-fields{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px;text-align:left}
+.ef-field{display:flex;flex-direction:column;gap:5px}
+.ef-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.9)}
+.ef-req{color:#f0b43c}
+.ef-field input{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;font-family:inherit}
+.ef-field input::placeholder{color:rgba(255,255,255,.4)}
+.ef-field input:focus{outline:none;border-color:#00c864;background:rgba(255,255,255,.12)}
+.ef-field select{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;font-family:inherit;appearance:auto}
+.ef-field select:focus{outline:none;border-color:#00c864;background:rgba(255,255,255,.12)}
+.ef-field select option{background:#0a2a45;color:#fff}
+.ef-checkgroup{display:flex;flex-wrap:wrap;gap:8px}
+.ef-check{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 12px 6px 10px;cursor:pointer;transition:.15s}
+.ef-check:hover{background:rgba(255,255,255,.13)}
+.ef-check input{accent-color:#00c864;cursor:pointer}
+.ef-check:has(input:checked){background:rgba(0,200,100,.22);border-color:#00c864}
+.entry-form-error{font-size:11.5px;color:#ffb4b4;background:rgba(255,60,60,.15);border:1px solid rgba(255,100,100,.35);border-radius:8px;padding:7px 12px;margin-top:14px;max-width:360px}
+.entry-form-actions{display:flex;gap:10px;margin-top:22px;align-items:center}
+.entry-form-back{background:transparent;border:none;color:rgba(255,255,255,.65);font-size:12px;cursor:pointer;padding:8px 4px}
+.entry-form-back:hover{color:#fff}
+.entry-form-submit{background:#00c864;color:#fff;border:none;border-radius:999px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.entry-form-submit:hover{filter:brightness(1.08)}
 .session-mode-wrap{display:flex;justify-content:flex-end;padding:8px 28px 0}
 .session-mode-bar{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;padding:5px 8px 5px 14px;transition:.2s;border:1px solid;border-radius:999px;background:#fff8e6;border-color:#f0b43c;width:auto}
 .session-mode-bar.estimation{background:#e8f7ef;border-color:#00a857}
@@ -427,7 +448,7 @@ input:checked+.slider:before{transform:translateX(18px)}
 <body>
 
 <div id="entry-overlay" class="entry-overlay">
-  <div class="entry-card">
+  <div class="entry-card" id="entry-choice-card">
     <div class="entry-logo">
       <div style="font-size:24px;font-weight:600;color:#fff">AI&thinsp;Builders</div>
       <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.24em;color:rgba(255,255,255,.78);margin-top:2px">Le leader de la stratégie data et IA</div>
@@ -447,6 +468,17 @@ input:checked+.slider:before{transform:translateX(18px)}
       </button>
     </div>
     <p class="entry-note">Ce choix reste modifiable à tout moment depuis le bandeau en haut de l'outil.</p>
+  </div>
+
+  <div class="entry-card" id="entry-form-card" style="display:none">
+    <div class="entry-product" style="margin-bottom:4px">ECOSCORE IA</div>
+    <p class="entry-desc" style="margin-bottom:20px">Avant d'accéder à l'estimation, merci de renseigner quelques informations sur le cas d'usage.</p>
+    <div class="entry-form-fields"></div>
+    <p class="entry-form-error" id="entry-form-error" style="display:none"></p>
+    <div class="entry-form-actions">
+      <button type="button" class="entry-form-back" onclick="backToEntryChoice()">← Retour</button>
+      <button type="button" class="entry-form-submit" onclick="submitEntryForm()">Valider et accéder à l'outil →</button>
+    </div>
   </div>
 </div>
 
@@ -2616,7 +2648,7 @@ ${autoprint?`<script>window.addEventListener('load',function(){setTimeout(functi
 // codées en dur ci-dessus restent utilisées, et la journalisation est simplement ignorée.
 // Une fois le backend déployé (voir ecoscore_backend/README.md), renseigner son URL ici,
 // par ex. 'https://ecoscore-api.onrender.com' (sans slash final).
-const API_BASE='https://ecoscore-back.onrender.com';
+const API_BASE='';
 let referenceVersion=null;
 
 async function loadReferenceData(){
@@ -2670,7 +2702,9 @@ async function postUsageToBackend(payload){
         mode:payload.kind==='compare'?'compare':'simple',
         client_id:getAnonClientId(),
         reference_version:referenceVersion,
-        inputs:payload.kind==='compare'?{scenarios:payload.scenarios.map(s=>s.input)}:payload.input,
+        inputs:payload.kind==='compare'
+          ?{scenarios:payload.scenarios.map(s=>s.input),context:payload.context}
+          :{...payload.input,context:payload.context},
         results:payload.kind==='compare'
           ?{scenarios:payload.scenarios.map(s=>({name:s.name,co2_p50:s.co2_p50,classe:s.classe}))}
           :{co2_p50:payload.co2_p50,classe:payload.classe},
@@ -2712,10 +2746,107 @@ function setSessionMode(mode){
   }
   updateExportLock();
 }
-function toggleSessionMode(){setSessionMode(sessionMode==='test'?'estimation':'test');}
+// ═══════════════════════════════════════════════════
+// FORMULAIRE OBLIGATOIRE AVANT ACCÈS AU MODE ESTIMATION
+// ═══════════════════════════════════════════════════
+// Liste modifiable : ajouter/retirer un champ ici suffit, le rendu et la validation
+// suivent automatiquement. `required:false` = champ facultatif malgré le formulaire obligatoire.
+const ENTRY_FORM_FIELDS=[
+  {id:'usecase_name',label:"Nom du cas d'usage",type:'text',required:true,placeholder:'Ex : Assistant support client'},
+  {id:'company_sector',label:"Domaine de l'entreprise",type:'select',required:true,
+    options:['Assurance','Banque / Finance','Retail / Distribution','Industrie','Santé','Énergie','Secteur public','Télécoms','Transport / Logistique','Autre']},
+  {id:'company_name',label:"Nom de l'entreprise",type:'text',required:false,placeholder:'Ex : AXA'},
+  {id:'business_functions',label:'Typologie(s) de métier concernée(s)',type:'text',required:true,placeholder:'Ex : RH, Support client'},
+  {id:'contact',label:'Contact (nom ou e-mail)',type:'text',required:false,placeholder:'Ex : jean.dupont@aib.fr'},
+];
+let entryFormData=null; // renseigné une fois le formulaire validé, pour toute la session
+
+function tryEnterEstimationMode(){
+  if(entryFormData){setSessionMode('estimation');hideEntryOverlay();return;}
+  showEntryForm();
+}
+
+function renderEntryField(f){
+  if(f.type==='select'){
+    return`<label class="ef-field">
+      <span class="ef-label">${f.label}${f.required?' <span class="ef-req">*</span>':''}</span>
+      <select id="ef_${f.id}">
+        <option value="">— Choisir —</option>
+        ${f.options.map(o=>`<option value="${o}">${o}</option>`).join('')}
+      </select>
+    </label>`;
+  }
+  if(f.type==='multiselect'){
+    return`<div class="ef-field">
+      <span class="ef-label">${f.label}${f.required?' <span class="ef-req">*</span>':''}</span>
+      <div class="ef-checkgroup" id="ef_${f.id}">
+        ${f.options.map(o=>`<label class="ef-check"><input type="checkbox" value="${o}"><span>${o}</span></label>`).join('')}
+      </div>
+    </div>`;
+  }
+  return`<label class="ef-field">
+    <span class="ef-label">${f.label}${f.required?' <span class="ef-req">*</span>':''}</span>
+    <input type="${f.type}" id="ef_${f.id}" placeholder="${f.placeholder||''}">
+  </label>`;
+}
+function showEntryForm(){
+  const ov=document.getElementById('entry-overlay');
+  if(ov){ov.style.display='';ov.classList.remove('hidden');}
+  document.getElementById('entry-choice-card').style.display='none';
+  const card=document.getElementById('entry-form-card');
+  card.style.display='';
+  card.querySelector('.entry-form-fields').innerHTML=ENTRY_FORM_FIELDS.map(renderEntryField).join('');
+  document.getElementById('entry-form-error').style.display='none';
+}
+function backToEntryChoice(){
+  document.getElementById('entry-form-card').style.display='none';
+  document.getElementById('entry-choice-card').style.display='';
+}
+function submitEntryForm(){
+  const data={};
+  for(const f of ENTRY_FORM_FIELDS){
+    if(f.type==='multiselect'){
+      const checked=[...document.querySelectorAll('#ef_'+f.id+' input:checked')].map(c=>c.value);
+      if(f.required&&checked.length===0){
+        const err=document.getElementById('entry-form-error');
+        err.textContent='Merci de sélectionner au moins une option pour « '+f.label+' » pour continuer.';
+        err.style.display='';
+        document.getElementById('ef_'+f.id).scrollIntoView?.({block:'center'});
+        return;
+      }
+      data[f.id]=checked;
+    }else{
+      const el=document.getElementById('ef_'+f.id);
+      const val=(el.value||'').trim();
+      if(f.required&&!val){
+        const err=document.getElementById('entry-form-error');
+        err.textContent='Merci de renseigner « '+f.label+' » pour continuer.';
+        err.style.display='';
+        el.focus();
+        return;
+      }
+      data[f.id]=val;
+    }
+  }
+  entryFormData=data;
+  setSessionMode('estimation');
+  hideEntryOverlay();
+}
+
+function toggleSessionMode(){
+  if(sessionMode==='test')tryEnterEstimationMode();
+  else setSessionMode('test');
+}
 
 function chooseEntryMode(mode){
-  setSessionMode(mode);
+  if(mode==='test'){
+    setSessionMode('test');
+    hideEntryOverlay();
+  }else{
+    tryEnterEstimationMode();
+  }
+}
+function hideEntryOverlay(){
   const ov=document.getElementById('entry-overlay');
   if(ov){ov.classList.add('hidden');setTimeout(()=>ov.style.display='none',350);}
 }
@@ -2739,12 +2870,12 @@ async function logUsageEvent(exportKind){
   if(sessionMode!=='estimation'||!lastResults)return;
   let payload;
   if(lastResults.type==='compare'){
-    payload={ts:new Date().toISOString(),kind:'compare',usageType,exportKind,
+    payload={ts:new Date().toISOString(),kind:'compare',usageType,exportKind,context:entryFormData,
       scenarios:lastResults.data.map(r=>({name:r.scenarioName,co2_p50:r.co2.p50,
         classe:getScore(r.co2.p50),input:summarizeInputForLog(r.rawInp)}))};
   }else{
     const r=lastResults.data;
-    payload={ts:new Date().toISOString(),kind:'simple',usageType,exportKind,
+    payload={ts:new Date().toISOString(),kind:'simple',usageType,exportKind,context:entryFormData,
       co2_p50:r.co2.p50,classe:getScore(r.co2.p50),input:summarizeInputForLog(r.rawInp)};
   }
   // Piste 1 : stockage partagé de l'artifact Claude (si disponible dans ce contexte)
